@@ -1,4 +1,4 @@
-export const revalidate = 3600;
+export const revalidate = 14400;
 
 import { getCoursesBySemester, getInstructorSummaries, getSemesters } from "@/utils/server/utils";
 import ScheduleContent from "./components/Content";

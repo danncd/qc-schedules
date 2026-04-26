@@ -1,4 +1,4 @@
-export const revalidate = 3600;
+export const revalidate = 14400;
 
 import { getInstructorHistory } from "@/utils/server/utils";
 import { notFound } from "next/navigation";

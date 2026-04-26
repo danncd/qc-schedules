@@ -1,3 +1,5 @@
+export const revalidate = 14400;
+
 import Button from "@/components/ui/Button";
 import { manrope } from "@/lib/fonts";
 import { IconMoodSmileBeam, IconArrowRight } from "@tabler/icons-react";

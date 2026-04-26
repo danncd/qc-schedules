@@ -1,4 +1,4 @@
-export const revalidate = 3600;
+export const revalidate = 14400;
 
 import { getInstructorNames } from "@/utils/server/utils";
 import InstructorContent from "./components/Content";
