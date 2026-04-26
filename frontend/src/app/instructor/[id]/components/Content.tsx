@@ -41,7 +41,7 @@ export default function InstructorContent({
 
 	return (
 		<main className="min-h-[calc(100vh-4rem)]">
-			<div className="flex items-center justify-between mb-3 gap-4">
+			<div className="flex items-start justify-between mb-3 gap-4">
 				<h1 className={`${manrope.className} font-bold text-xl`}>
 					Historical Data For{" "}
 					<span className="text-purple-800 underline">
@@ -51,7 +51,7 @@ export default function InstructorContent({
 
 				<button
 					onClick={() => setIsAllExpanded(!isAllExpanded)}
-					className={`${manrope.className} cursor-pointer uppercase text-xs font-extrabold text-gray-600 dark:text-gray-200`}
+					className={`mt-1 ${manrope.className} cursor-pointer uppercase text-xs font-extrabold text-gray-600 dark:text-gray-200`}
 				>
 					{!isAllExpanded ? "Expand All" : "Collapse All"}
 				</button>
