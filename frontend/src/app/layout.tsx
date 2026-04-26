@@ -22,7 +22,7 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" className={`${roboto.className} antialiased`}>
+		<html lang="en" className={`${roboto.className} antialiased`} suppressHydrationWarning>
             <head>
 				<script
 					id="theme-checker"
@@ -40,7 +40,7 @@ export default function RootLayout({
 					}}
 				/>
 			</head>
-			<body className="overflow-x-auto min-w-100 px-4 dark:bg-[#121212] dark:text-gray-100 transition-colors ease-in-out duration-200">
+			<body className="overflow-x-auto min-w-100 px-4 dark:bg-[#121212] dark:text-gray-100">
 				<Analytics/>
                 <div className="max-w-255 w-full mx-auto">
                     <Navigation/>
