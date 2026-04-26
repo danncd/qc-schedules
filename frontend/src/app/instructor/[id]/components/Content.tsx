@@ -41,7 +41,7 @@ export default function InstructorContent({
 
 	return (
 		<main className="min-h-[calc(100vh-4rem)]">
-			<div className="flex items-center justify-between mb-3">
+			<div className="flex items-center justify-between mb-3 gap-4">
 				<h1 className={`${manrope.className} font-bold text-xl`}>
 					Historical Data For{" "}
 					<span className="text-purple-800 underline">
