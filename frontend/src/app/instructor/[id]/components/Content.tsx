@@ -4,7 +4,8 @@ import { useState } from "react";
 import SemesterCard from "./SemesterCard";
 import { manrope } from "@/lib/fonts";
 import { GroupedInstructorHistory } from "@/lib/types";
-import { colorBgGPA, colorBorderGPA, colorGPA, colorWithdrawalRate, getSummary, letterGradeFromGPA } from "@/utils/client/utils";
+import { colorBgGPA, colorBorderGPA, colorGPA, colorWithdrawalRate, getGradeDistribution, getSummary, letterGradeFromGPA } from "@/utils/client/utils";
+import GradeDistributionBar from "./GradeDistributionBar";
 
 type Props = {
 	instructorName: string;
@@ -23,7 +24,13 @@ export default function InstructorContent({
 		return `${season} ${year}`;
 	};
 
+	const distribution = getGradeDistribution(instructorData);
+
 	const { teaching, overall, subjectStats } = getSummary(instructorData);
+	console.log(
+  getSummary(instructorData).overall.withdrawalRate,
+  getGradeDistribution(instructorData).find(g => g.label === "W")
+);
 
 	return (
 		<main className="min-h-[calc(100vh-4rem)]">
@@ -74,6 +81,7 @@ export default function InstructorContent({
 						))}
                     </div>
 				</div>
+				<GradeDistributionBar distribution={distribution} />
 			</div>
 
 			{Object.entries(instructorData).map(([term, courses]) => (

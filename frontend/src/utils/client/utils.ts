@@ -121,23 +121,22 @@ export function getCourseStats(course: InstructorSummary) {
 		Number(course.w) ||
 		0;
 
-	const withdrawalRate = total ? Number(((withdrawals / total) * 100).toFixed(2)) : 0;
-
-	const passed =
-
-		(Number(course["a+"] || 0) +
-			Number(course["a"] || 0) +
-			Number(course["a-"] || 0) +
-			Number(course["b+"] || 0) +
-			Number(course["b"] || 0) +
-			Number(course["b-"] || 0) +
-			Number(course["c+"] || 0) +
-			Number(course["c"] || 0));
-	const passingRate = total
-		? Number(((passed / total) * 100).toFixed(2))
+	const withdrawalRate = total
+		? Number(((withdrawals / total) * 100).toFixed(2))
 		: 0;
 
-	return {gpa, withdrawalRate, passingRate};
+	const passed =
+		Number(course["a+"] || 0) +
+		Number(course["a"] || 0) +
+		Number(course["a-"] || 0) +
+		Number(course["b+"] || 0) +
+		Number(course["b"] || 0) +
+		Number(course["b-"] || 0) +
+		Number(course["c+"] || 0) +
+		Number(course["c"] || 0);
+	const passingRate = total ? Number(((passed / total) * 100).toFixed(2)) : 0;
+
+	return { gpa, withdrawalRate, passingRate };
 }
 
 export function getSummary(data: GroupedInstructorHistory) {
@@ -195,4 +194,54 @@ export function getSummary(data: GroupedInstructorHistory) {
 		},
 		subjectStats,
 	};
+}
+
+export type GradeBucket = {
+	label: "A" | "B" | "C" | "D" | "F" | "W";
+	value: number;
+	percent: number;
+};
+
+export function getGradeDistribution(
+	data: Record<string, InstructorSummary[]>,
+): GradeBucket[] {
+	const allCourses = Object.values(data).flat();
+	const totals = {
+		A: 0,
+		B: 0,
+		C: 0,
+		D: 0,
+		F: 0,
+		W: 0,
+		P: 0,
+		INC: 0,
+	};
+	for (const c of allCourses) {
+		totals.A +=
+			Number(c["a+"] || 0) + Number(c.a || 0) + Number(c["a-"] || 0);
+		totals.B +=
+			Number(c["b+"] || 0) + Number(c.b || 0) + Number(c["b-"] || 0);
+		totals.C +=
+			Number(c["c+"] || 0) + Number(c.c || 0) + Number(c["c-"] || 0);
+		totals.D += Number(c["d+"] || 0) + Number(c.d || 0);
+		totals.F += Number(c.f || 0);
+		totals.W +=
+			Number(c.w || 0) +
+			Number(c.withdraw || 0) +
+			Number(c.withdrawal || 0);
+
+		totals.P += Number(c.p || 0);
+		totals.INC +=
+			Number(c["inc/na"] || 0) +
+			Number(c["inc/no grade"] || 0) +
+			Number(c.incomplete || 0);
+	}
+	const total = Object.values(totals).reduce((a, b) => a + b, 0) || 1;
+	const visible = ["A", "B", "C", "D", "F", "W"] as const;
+
+	return visible.map((label) => ({
+		label,
+		value: totals[label],
+		percent: (totals[label] / total) * 100,
+	}));
 }
