@@ -39,7 +39,7 @@ export default function Home() {
                 </p>
 
                 <div className="flex flex-row items-center justify-center gap-4">
-                    <Link href="/schedule" passHref>
+                    <Link href="/schedule" passHref replace>
                         <Button className="py-2 flex items-center gap-2">
                             <IconArrowRight size={16} aria-hidden="true" />
                             View Schedules
