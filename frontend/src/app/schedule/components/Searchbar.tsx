@@ -34,7 +34,7 @@ export default function SearchBar({
 					onChange={(e) => onChange(e.target.value)}
 				/>
 			</div>
-			<div className="flex flex-row gap-3 items-center">
+			<div className="flex flex-row flex-wrap gap-3 items-center">
 				{semesters.map((sem) => (
 					<Button
 						key={sem}
