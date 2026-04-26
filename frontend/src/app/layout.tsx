@@ -14,6 +14,12 @@ export const metadata: Metadata = {
 	title: "QC Schedules | Complete Queens College Course Listings",
 	description:
 		"Browse the latest Queens College course offerings, including sections, instructors, and meeting times.",
+	icons: {
+
+		icon: "/favicon.ico",
+		apple: "/apple-touch-icon.png",
+	},
+
 };
 
 export default function RootLayout({
