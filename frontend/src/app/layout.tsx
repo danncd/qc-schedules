@@ -3,6 +3,7 @@ import { Roboto } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
+import { Analytics } from "@vercel/analytics/next"
 
 const roboto = Roboto({
 	subsets: ["latin"],
@@ -40,6 +41,7 @@ export default function RootLayout({
 				/>
 			</head>
 			<body className="overflow-x-auto min-w-100 px-4 dark:bg-[#121212] dark:text-gray-100 transition-colors ease-in-out duration-200">
+				<Analytics/>
                 <div className="max-w-255 w-full mx-auto">
                     <Navigation/>
                     {children}
