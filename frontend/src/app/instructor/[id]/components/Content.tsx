@@ -44,7 +44,7 @@ export default function InstructorContent({
 			<div className="flex items-start justify-between mb-3 gap-4">
 				<h1 className={`${manrope.className} font-bold text-xl`}>
 					Historical Data For{" "}
-					<span className="text-purple-800 underline">
+					<span className="text-purple-800 underline whitespace-nowrap">
 						{instructorName}
 					</span>
 				</h1>
