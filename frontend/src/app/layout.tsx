@@ -46,7 +46,7 @@ export default function RootLayout({
 					}}
 				/>
 			</head>
-			<body className="overflow-x-auto min-w-100 px-4 dark:bg-[#121212] dark:text-gray-100">
+			<body className="overflow-x-auto min-w-50 px-4 dark:bg-[#121212] dark:text-gray-100">
 				<Analytics/>
                 <div className="max-w-255 w-full mx-auto">
                     <Navigation/>

@@ -1,5 +1,5 @@
 import Button from "@/components/ui/Button";
-import { IconSearch } from "@tabler/icons-react";
+import { IconSearch, IconX } from "@tabler/icons-react";
 
 interface SearchBarProps {
 	semesters: string[];
@@ -50,13 +50,13 @@ export default function SearchBar({
 				/>
 				<Button
 					onClick={onSelectNew}
-					className={`py-1! ${
+					className={`flex items-center py-1! ${
 						isNewSelected
 							? "dark:bg-red-600! bg-red-500! dark:text-white"
 							: "bg-gray-200! text-gray-900"
 					}`}
 				>
-					New
+					{isNewSelected && <IconX size={15} className="mr-2"/>}New
 				</Button>
 			</div>
 		</div>
