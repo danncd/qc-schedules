@@ -10,7 +10,6 @@ import {
 	letterGradeFromGPA,
 } from "@/utils/client/utils";
 import { IconExternalLink } from "@tabler/icons-react";
-import { Span } from "next/dist/trace";
 import Link from "next/link";
 import { useState, useMemo } from "react";
 
@@ -46,11 +45,11 @@ export default function CourseCard({ course, instructor }: Props) {
 	const passRate = Number(instructor?.["Pass_Rate_Effective (%)"] || 0);
 	const withdrawalRate = Number(instructor?.["Withdrawal_Rate (%)"] || 0);
 
-	const ONE_DAY_MS = 1000 * 60 * 60 * 24;
+	const DAY_MS = 1000 * 60 * 60 * 24 * 2;
 
 	const isNew = useMemo(() => {
 		if (!course.created) return false;
-		return Date.now() - new Date(course.created).getTime() <= ONE_DAY_MS;
+		return Date.now() - new Date(course.created).getTime() <= DAY_MS;
 	}, [course.created]);
 
 	return (

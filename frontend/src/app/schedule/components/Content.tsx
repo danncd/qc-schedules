@@ -75,7 +75,7 @@ export default function ScheduleContent({
         updateURL(1, selectedSem, nextNew, searchQuery);
     };
     
-    const ONE_DAY_MS = 1000 * 60 * 60 * 24;
+    const DAY_MS = 1000 * 60 * 60 * 24 * 2;
 
     const filteredCourses = useMemo(() => {
         const q = debouncedQuery.toLowerCase().trim();
@@ -91,7 +91,7 @@ export default function ScheduleContent({
 
             const isNew =
                 !showNewOnly ||
-                Date.now() - new Date(c.created).getTime() <= ONE_DAY_MS;
+                Date.now() - new Date(c.created).getTime() <= DAY_MS;
             return matchesSearch && matchesSemester && isNew;
         });
     }, [semesterData, debouncedQuery, selectedSem, showNewOnly]);
