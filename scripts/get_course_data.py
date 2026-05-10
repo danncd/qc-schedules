@@ -1,0 +1,62 @@
+import io
+import pandas as pd
+from playwright.sync_api import sync_playwright
+
+SEMESTERS = {
+    "02N": "spring",
+    "06N": "summer 1",
+    "06Y": "summer 2",
+    "09N": "fall",
+    "02Y": "winter"
+}
+
+def get_course_data():
+    
+    all_semesters_df = {}
+
+    with sync_playwright() as p:
+
+        browser = p.chromium.launch(headless= True)
+        page = browser.new_page()
+
+        print("Opening QC Course Search...")
+        page.goto("https://apps.qc.cuny.edu/courses/")
+
+        year = page.locator(
+            "#MainContent_tcMainSearch_tbCourseSchd_ddlTermYear"
+        ).input_value()
+
+        print("Clicking schedule window...")
+        page.get_by_text("Schedule").first.click()
+
+        for value, name in SEMESTERS.items():
+            print(f"Processing {name} {year}...")
+
+            page.select_option(
+                "#MainContent_tcMainSearch_tbCourseSchd_ddlSemester",
+                value
+            )
+
+            page.locator(
+                "#MainContent_tcMainSearch_tbCourseSchd_btnBringSchedule"
+            ).click()
+
+            page.wait_for_selector("#gvCourseSchd", timeout=60000)
+
+            html = page.content()
+
+            df = pd.read_html(
+                io.StringIO(html),
+                attrs={"id": "gvCourseSchd"}
+            )[0]
+
+            df = df.dropna(how="all", axis=1)
+            all_semesters_df[f"{name} {year}".replace(" ","_")] = df
+
+        browser.close()
+    return all_semesters_df
+
+if __name__ == "__main__":
+    all_semesters_df = get_course_data()
+    for semester, df in all_semesters_df.items():
+        df.to_csv(f"{semester}.csv", index=False)
