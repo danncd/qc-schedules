@@ -8,7 +8,7 @@ export default async function InstructorPage() {
 	const instructorData = await getInstructorNames();
 
 	return (
-		<main>
+		<main className="min-h-[calc(100vh-4rem)]">
 			<h1 className={`${manrope.className} font-bold text-xl`}>
 				Instructor Lookup
 			</h1>
