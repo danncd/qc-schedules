@@ -14,11 +14,14 @@ export default async function InstructorIDPage({ params }: Props) {
 	const instructorName = decodeURIComponent(id);
 	const instructorData = await getInstructorHistory(instructorName);
 
-	
+	if (!instructorData || Object.keys(instructorData).length === 0) notFound();
 
 	return (
 		<main>
-    <pre>{JSON.stringify(instructorData, null, 2)}</pre>
-</main>
+            <InstructorIDClient
+                instructorName={instructorName}
+                instructorData={instructorData}
+            />
+        </main>
 	);
 }
