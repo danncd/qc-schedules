@@ -30,4 +30,4 @@ jobs:
       - name: Run scripts/upload_data.py
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: python scripts/save_schedule.py
+        run: python scripts/upload_data.py
