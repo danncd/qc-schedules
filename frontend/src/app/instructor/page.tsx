@@ -1,8 +1,8 @@
+export const revalidate = 14400;
+
 import { getInstructorNames } from "@/_utils/server";
 import InstructorClient from "./_components/InstructorClient";
 import { manrope } from "@/_lib/fonts";
-
-export const revalidate = 14400;
 
 export default async function InstructorPage() {
 	const instructorData = await getInstructorNames();

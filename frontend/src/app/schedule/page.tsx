@@ -1,3 +1,5 @@
+export const revalidate = 14400;
+
 import { manrope } from "@/_lib/fonts";
 import { getInstructorCourseSummaries, getScheduleData } from "@/_utils/server";
 import ScheduleClient from "./_components/ScheduleClient";
