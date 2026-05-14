@@ -7,28 +7,37 @@ from get_course_data import get_course_data
 from get_grades_data import get_grades_data
 from get_professor_summary import get_professor_summary
 
-def sync_table_to_supabase(df, table_name, engine):
+def sync_table_to_supabase(df, table_name, engine, sync_key):
     if df is None or df.empty:
         return
 
     now = pd.Timestamp.now()
-    df['created'] = now
-    df['last_updated'] = now
-
     inspector = inspect(engine)
-    table_exists = inspector.has_table(table_name)
+
+    if sync_key in df.columns:
+        df[sync_key] = df[sync_key].astype(str).str.strip()
+
+    if inspector.has_table(table_name):
+        existing_data = pd.read_sql(f'SELECT "{sync_key}", "created" FROM "{table_name}"', engine)
+        existing_data[sync_key] = existing_data[sync_key].astype(str).str.strip()
+        existing_lookup = existing_data.drop_duplicates(subset=[sync_key])
+        
+        final_df = pd.merge(df, existing_lookup, on=sync_key, how='left')
+        final_df['created'] = final_df['created'].fillna(now)
+    else:
+        final_df = df.copy()
+        final_df['created'] = now
+
+    final_df['last_updated'] = now
 
     with engine.begin() as conn:
-        if table_exists:
+        if inspector.has_table(table_name):
             conn.execute(text(f'TRUNCATE TABLE "{table_name}" RESTART IDENTITY CASCADE;'))
-            mode = 'append'
-        else:
-            mode = 'fail' 
-
-        df.to_sql(
+        
+        final_df.to_sql(
             table_name, 
             conn, 
-            if_exists=mode,
+            if_exists='append',
             index=False,
             method='multi',
             chunksize=1000
@@ -55,14 +64,16 @@ def main():
         sync_table_to_supabase(
             df=new_df, 
             table_name=semester_name, 
-            engine=engine
+            engine=engine, 
+            sync_key='Code'
         )
 
     summary_df = get_professor_summary()
     sync_table_to_supabase(
         df=summary_df, 
         table_name="instructor_course_summary", 
-        engine=engine
+        engine=engine, 
+        sync_key='Instructor'
     )
 
 if __name__ == "__main__":
