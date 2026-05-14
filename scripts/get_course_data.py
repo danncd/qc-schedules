@@ -59,4 +59,4 @@ def get_course_data():
 if __name__ == "__main__":
     all_semesters_df = get_course_data()
     for semester, df in all_semesters_df.items():
-        df.to_csv(f"{semester}.csv", index=False)
+        print(f"{len(df)} - {semester}")
