@@ -212,31 +212,36 @@ def parse_cs_schedule_pdf(pdf_source: Any) -> List[Dict[str, str]]:
     return courses
 
 
-def get_csci_381_topic_maps(pdf_source: Any) -> Tuple[Dict[str, str], Dict[str, str]]:
-    """
-    Extracts mappings of CSCI 381 specific titles:
-    Returns (code_to_title, section_to_title).
-    """
+def clean_topic_title(raw_title: str) -> str:
+    t = re.sub(r"^(?:vt|scm|scs):?\s*", "", raw_title, flags=re.IGNORECASE).strip()
+    t = re.sub(r"\bAdv\s+Python\b", "Advanced Python", t, flags=re.IGNORECASE)
+    t = re.sub(r"\bProgrammin\b", "Programming", t, flags=re.IGNORECASE)
+    t = re.sub(r"\bForensic\b", "Forensics", t, flags=re.IGNORECASE)
+    return t
+
+
+def get_csci_topic_maps(pdf_source: Any) -> Tuple[Dict[str, str], Dict[str, Dict[str, str]]]:
     courses = parse_cs_schedule_pdf(pdf_source)
     code_map: Dict[str, str] = {}
-    sec_map: Dict[str, str] = {}
+    sec_map: Dict[str, Dict[str, str]] = {"381": {}, "780": {}}
 
     for c in courses:
-        if c["catalog"] == "381":
-            title = c["title"].strip()
-            title = re.sub(r"^vt:?\s*", "", title, flags=re.IGNORECASE).strip()
+        cat = c.get("catalog")
+        if cat in ("381", "780"):
+            title = clean_topic_title(c["title"])
             if title:
                 code_map[c["class_num"]] = title
-                sec_map[c["section"]] = title
+                sec_map[cat][c["section"]] = title
 
     return code_map, sec_map
 
 
-def enrich_schedule_df(df: pd.DataFrame, season: str, code_map: Dict[str, str], sec_map: Dict[str, str]) -> pd.DataFrame:
-    """
-    Enriches CSCI 381 rows in a scraped course schedule DataFrame with the
-    specific topic title from the CS department schedule.
-    """
+def get_csci_381_topic_maps(pdf_source: Any) -> Tuple[Dict[str, str], Dict[str, str]]:
+    code_map, sec_map = get_csci_topic_maps(pdf_source)
+    return code_map, sec_map.get("381", {})
+
+
+def enrich_schedule_df(df: pd.DataFrame, season: str, code_map: Dict[str, str], sec_map: Any) -> pd.DataFrame:
     if df is None or df.empty:
         return df
 
@@ -252,11 +257,19 @@ def enrich_schedule_df(df: pd.DataFrame, season: str, code_map: Dict[str, str], 
         course_str = str(row[course_col]).strip()
         current_desc = str(row[desc_col]).strip()
 
-        if course_str.startswith("CSCI 381"):
+        m_course = re.match(r"^CSCI\s+(381|780)\b", course_str, re.IGNORECASE)
+        if m_course:
+            catalog = m_course.group(1)
             code = str(row.get("Code", "")).strip()
             sec = str(row.get("Sec", "")).strip()
 
-            matched_title = code_map.get(code) or sec_map.get(sec)
+            matched_title = code_map.get(code)
+            if not matched_title:
+                if isinstance(sec_map, dict) and catalog in sec_map:
+                    matched_title = sec_map[catalog].get(sec)
+                elif isinstance(sec_map, dict):
+                    matched_title = sec_map.get(sec)
+
             if matched_title:
                 return matched_title
 
@@ -267,24 +280,19 @@ def enrich_schedule_df(df: pd.DataFrame, season: str, code_map: Dict[str, str], 
 
 
 def enrich_all_schedules(all_semesters_df: Dict[str, pd.DataFrame]) -> Dict[str, pd.DataFrame]:
-    """
-    Given the dictionary of scraped DataFrames from get_course_data(),
-    discovers CS department schedule PDFs and enriches all CSCI 381 rows.
-    """
-    print("[*] Fetching CS department schedule PDFs for CSCI 381 enrichment...")
+    print("[*] Fetching CS department schedule PDFs for special topics enrichment...")
     pdf_urls = discover_schedule_pdfs()
 
-    pdf_maps: Dict[str, Tuple[Dict[str, str], Dict[str, str]]] = {}
+    pdf_maps: Dict[str, Tuple[Dict[str, str], Dict[str, Dict[str, str]]]] = {}
     for season, url in pdf_urls.items():
         try:
             print(f"    Parsing {season.capitalize()} schedule from {url}...")
-            pdf_maps[season] = get_csci_381_topic_maps(url)
+            pdf_maps[season] = get_csci_topic_maps(url)
         except Exception as e:
             print(f"    Warning: Could not parse {season} PDF ({e}).")
 
     enriched: Dict[str, pd.DataFrame] = {}
     for sem_name, df in all_semesters_df.items():
-        # Match semester name to season key
         sem_lower = sem_name.lower()
         matched_season = None
         for s in ["winter", "spring", "summer", "fall"]:
@@ -295,7 +303,7 @@ def enrich_all_schedules(all_semesters_df: Dict[str, pd.DataFrame]) -> Dict[str,
         if matched_season and matched_season in pdf_maps:
             code_map, sec_map = pdf_maps[matched_season]
             df = enrich_schedule_df(df, matched_season, code_map, sec_map)
-            print(f"[+] Enriched CSCI 381 topics for {sem_name}.")
+            print(f"[+] Enriched special topics for {sem_name}.")
 
         enriched[sem_name] = df
 
@@ -324,7 +332,7 @@ def get_term_season_year(term: str) -> Tuple[Optional[str], Optional[str]]:
 
 def enrich_grades_df(
     df: pd.DataFrame,
-    pdf_maps: Optional[Dict[str, Tuple[Dict[str, str], Dict[str, str]]]] = None,
+    pdf_maps: Optional[Dict[str, Tuple[Dict[str, str], Any]]] = None,
     pdf_years: Optional[Dict[str, str]] = None,
 ) -> pd.DataFrame:
     if df is None or df.empty:
@@ -339,7 +347,7 @@ def enrich_grades_df(
         pdf_years = {}
         for season, url in pdf_urls.items():
             try:
-                pdf_maps[season] = get_csci_381_topic_maps(url)
+                pdf_maps[season] = get_csci_topic_maps(url)
                 m = re.search(r"(\d{2})\.pdf", url)
                 pdf_years[season] = "20" + m.group(1) if m else str(pd.Timestamp.now().year)
             except Exception:
@@ -352,7 +360,7 @@ def enrich_grades_df(
         num = str(row.get("Course Number", "")).strip()
         curr_name = str(row.get("Course Name", "")).strip()
 
-        if subj != "CSCI" or num != "381":
+        if subj != "CSCI" or num not in ("381", "780"):
             return curr_name
 
         term_str = str(row.get("Term", "")).strip()
@@ -362,21 +370,21 @@ def enrich_grades_df(
         matched_title = None
         if season in pdf_maps and pdf_years.get(season) == year:
             _, sec_map = pdf_maps[season]
-            matched_title = sec_map.get(sec)
+            if isinstance(sec_map, dict) and num in sec_map:
+                matched_title = sec_map[num].get(sec)
+            elif isinstance(sec_map, dict):
+                matched_title = sec_map.get(sec)
 
         if matched_title:
             return matched_title
 
-        return re.sub(r"^vt:?\s*", "", curr_name, flags=re.IGNORECASE).strip()
+        return re.sub(r"^(?:vt|scm|scs):?\s*", "", curr_name, flags=re.IGNORECASE).strip()
 
     df["Course Name"] = df.apply(update_name, axis=1)
     return df
 
 
 def sync_database_csci381(dry_run: bool = True):
-    """
-    Directly inspects and updates CSCI 381 descriptions in Supabase database tables.
-    """
     load_dotenv()
     db_url = os.getenv("SUPABASE_DB_URL")
     if not db_url:
@@ -390,12 +398,12 @@ def sync_database_csci381(dry_run: bool = True):
     pdf_maps = {}
     pdf_years = {}
     for season, url in pdf_urls.items():
-        print(f"[*] Extracting CSCI 381 topics from {season} PDF: {url}")
-        code_map, sec_map = get_csci_381_topic_maps(url)
+        print(f"[*] Extracting CSCI 381/780 topics from {season} PDF: {url}")
+        code_map, sec_map = get_csci_topic_maps(url)
         pdf_maps[season] = (code_map, sec_map)
         m = re.search(r"(\d{2})\.pdf", url)
         pdf_years[season] = "20" + m.group(1) if m else str(pd.Timestamp.now().year)
-        print(f"    Found {len(code_map)} CSCI 381 sections.")
+        print(f"    Found {len(code_map)} special topics sections.")
 
     total_updated = 0
 
@@ -417,32 +425,37 @@ def sync_database_csci381(dry_run: bool = True):
 
                 select_q = text(
                     f'SELECT "Sec", "Code", "Course (hr, crd)", "Description" '
-                    f'FROM "{table}" WHERE "Course (hr, crd)" ILIKE :pat'
+                    f'FROM "{table}" WHERE "Course (hr, crd)" ILIKE :p1 OR "Course (hr, crd)" ILIKE :p2'
                 )
-                rows = conn.execute(select_q, {"pat": "CSCI 381%"}).fetchall()
-                print(f"\n[*] Table '{table}': {len(rows)} CSCI 381 sections found in DB.")
+                rows = conn.execute(select_q, {"p1": "CSCI 381%", "p2": "CSCI 780%"}).fetchall()
+                print(f"\n[*] Table '{table}': {len(rows)} CSCI 381/780 sections found in DB.")
 
                 for r in rows:
                     sec = str(r[0]).strip()
                     code = str(r[1]).strip()
+                    course_str = str(r[2]).strip()
                     curr_desc = str(r[3]).strip()
 
-                    matched_title = code_map.get(code) or sec_map.get(sec)
+                    m_course = re.match(r"^CSCI\s+(381|780)\b", course_str, re.IGNORECASE)
+                    catalog = m_course.group(1) if m_course else "381"
+
+                    matched_title = code_map.get(code) or sec_map.get(catalog, {}).get(sec)
                     if matched_title:
                         new_desc = matched_title
-                        if curr_desc != new_desc:
-                            print(f"    UPDATE [{table}] Code {code} (Sec {sec}): '{curr_desc}' -> '{new_desc}'")
-                            total_updated += 1
-                            if not dry_run:
-                                update_q = text(
-                                    f'UPDATE "{table}" SET "Description" = :new_desc, "last_updated" = NOW() '
-                                    f'WHERE "Code" = :code'
-                                )
-                                conn.execute(update_q, {"new_desc": new_desc, "code": code})
-                        else:
-                            print(f"    ALREADY UP TO DATE [{table}] Code {code}: '{curr_desc}'")
                     else:
-                        print(f"    NO MATCH in PDF for [{table}] Code {code} (Sec {sec})")
+                        new_desc = clean_topic_title(curr_desc)
+
+                    if curr_desc != new_desc:
+                        print(f"    UPDATE [{table}] Code {code} (Sec {sec}): '{curr_desc}' -> '{new_desc}'")
+                        total_updated += 1
+                        if not dry_run:
+                            update_q = text(
+                                f'UPDATE "{table}" SET "Description" = :new_desc, "last_updated" = NOW() '
+                                f'WHERE "Code" = :code'
+                            )
+                            conn.execute(update_q, {"new_desc": new_desc, "code": code})
+                    else:
+                        print(f"    ALREADY UP TO DATE [{table}] Code {code}: '{curr_desc}'")
 
         check_ig = conn.execute(
             text("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'instructor_grades')")
@@ -451,27 +464,28 @@ def sync_database_csci381(dry_run: bool = True):
         if check_ig:
             ig_rows = conn.execute(
                 text(
-                    'SELECT "Term", "Section", "Course Name", "Instructor" '
+                    'SELECT "Term", "Section", "Course Name", "Instructor", "Course Number" '
                     'FROM "instructor_grades" '
-                    'WHERE "Subject" = :subj AND "Course Number" = :num'
+                    'WHERE "Subject" = :subj AND "Course Number" IN (\'381\', \'780\')'
                 ),
-                {"subj": "CSCI", "num": "381"},
+                {"subj": "CSCI"},
             ).fetchall()
-            print(f"\n[*] Table 'instructor_grades': {len(ig_rows)} CSCI 381 sections found in DB.")
+            print(f"\n[*] Table 'instructor_grades': {len(ig_rows)} CSCI 381/780 sections found in DB.")
 
             for r in ig_rows:
                 term = str(r[0]).strip()
                 sec = str(r[1]).strip()
                 curr_name = str(r[2]).strip()
                 inst = str(r[3]).strip()
+                catalog = str(r[4]).strip()
 
                 season, year = get_term_season_year(term)
                 matched_title = None
                 if season in pdf_maps and pdf_years.get(season) == year:
                     _, sec_map = pdf_maps[season]
-                    matched_title = sec_map.get(sec)
+                    matched_title = sec_map.get(catalog, {}).get(sec)
 
-                new_name = matched_title if matched_title else re.sub(r"^vt:?\s*", "", curr_name, flags=re.IGNORECASE).strip()
+                new_name = matched_title if matched_title else re.sub(r"^(?:vt|scm|scs):?\s*", "", curr_name, flags=re.IGNORECASE).strip()
 
                 if curr_name != new_name:
                     print(f"    UPDATE [instructor_grades] Term {term} Sec {sec} ({inst}): '{curr_name}' -> '{new_name}'")
@@ -486,7 +500,7 @@ def sync_database_csci381(dry_run: bool = True):
                             {
                                 "new_name": new_name,
                                 "subj": "CSCI",
-                                "num": "381",
+                                "num": catalog,
                                 "term": r[0],
                                 "sec": r[1],
                                 "inst": r[3],
@@ -498,7 +512,7 @@ def sync_database_csci381(dry_run: bool = True):
     if dry_run:
         print(f"\n[DRY RUN COMPLETE] {total_updated} rows would be updated in Supabase. (Use --commit to execute)")
     else:
-        print(f"\n[SUCCESS] Committed {total_updated} CSCI 381 description updates to Supabase.")
+        print(f"\n[SUCCESS] Committed {total_updated} special topics description updates to Supabase.")
 
 
 def main():

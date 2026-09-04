@@ -81,7 +81,7 @@ export const InstructorCourseCard = memo(function CourseCard({ course }: Props) 
                     </span>
                 </div>
                 <h4 className="font-medium text-xs text-neutral-700 dark:text-neutral-300 mt-1">
-                    {course["Course Name"]?.replace(/^VT:\s*/i, "")}
+                    {course["Course Name"]?.replace(/^(?:VT|SCM|SCS):\s*/i, "")}
                 </h4>
             </div>
             
