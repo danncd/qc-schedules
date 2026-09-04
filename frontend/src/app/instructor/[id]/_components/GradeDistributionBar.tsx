@@ -18,26 +18,26 @@ const getColor = (label: string) => {
     }
 };
 
-const MIN_WIDTH = 8;
-
 export default function GradeDistributionBar({ distribution }: Props) {
     return (
         <div className="mt-3 space-y-1">
             <div className="flex w-full h-6 rounded overflow-hidden bg-gray-300 dark:bg-gray-700">
                 {distribution.map((g) => {
-                    const width = Math.max(g.percent, MIN_WIDTH);
+                    if (g.percent <= 0) return null;
                     return (
                         <div
                             key={g.label}
-                            className={`relative ${getColor(g.label)} h-full flex items-center justify-center`}
-                            style={{ width: `${width}%` }}
+                            className={`relative ${getColor(g.label)} h-full flex items-center justify-center transition-all duration-300`}
+                            style={{ width: `${g.percent}%` }}
                             title={`${g.label}: ${g.percent.toFixed(1)}%, Count: ${g.value}`}
                         >
-                            <div
-                                className={`hidden lg:block pointer-events-none bg-white/50 ${manrope.className} text-[11px] font-extrabold text-black drop-shadow-sm rounded-md whitespace-nowrap px-1`}
-                            >
-                                {g.label} - <span className="font-bold">{g.percent.toFixed(1)}%</span>
-                            </div>
+                            {g.percent >= 7 && (
+                                <div
+                                    className={`hidden lg:block pointer-events-none bg-white/50 ${manrope.className} text-[11px] font-extrabold text-black drop-shadow-sm rounded-md whitespace-nowrap px-1`}
+                                >
+                                    {g.label} - <span className="font-bold">{g.percent.toFixed(1)}%</span>
+                                </div>
+                            )}
                         </div>
                     );
                 })}

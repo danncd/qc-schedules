@@ -39,25 +39,25 @@ export type InstructorSummary = {
     "Course Name": string;
     Section: string;
     Instructor: string;
-    Total: string;
+    Total: string | number;
 
-    "a+": string;
-    "a": string;
-    "a-": string;
-    "b+": string;
-    "b": string;
-    "b-": string;
-    "c+": string;
-    "c": string;
-    "c-": string;
-    "d+": number;
-    "d": string;
-    "f": string;
-    "w": string;
-    inc: string;
+    "a+": string | number;
+    "a": string | number;
+    "a-": string | number;
+    "b+": string | number;
+    "b": string | number;
+    "b-": string | number;
+    "c+": string | number;
+    "c": string | number;
+    "c-": string | number;
+    "d+": string | number;
+    "d": string | number;
+    "f": string | number;
+    "w": string | number;
+    inc: string | number;
 
-    "avg gpa": string | null;
-    p: string | null;
+    "avg gpa": string | number | null;
+    p: string | number | null;
 
     created: string;
     last_updated: string;

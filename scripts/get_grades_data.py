@@ -23,25 +23,31 @@ def get_grades_data():
     }
 
     try:
-        response = requests.get(EXCEL_URL, timeout=30)
+        print("Fetching grades workbook from Google Sheets...")
+        response = requests.get(EXCEL_URL, timeout=120)
         response.raise_for_status()
 
         all_sheets_dict = pd.read_excel(io.BytesIO(response.content), sheet_name=None, engine='openpyxl')
-        
         print(f"Found {len(all_sheets_dict)} tabs.")
 
         all_dataframes = []
 
         for tab_name, df in all_sheets_dict.items():
+            if df.empty or len(df.columns) == 0:
+                continue
+
             df.columns = [str(col).lower().strip() for col in df.columns]
 
             if df.columns[0] == '0':
-                df.columns.values[0] = 'term'
+                df = df.rename(columns={df.columns[0]: 'term'})
 
             df = df.rename(columns=column_map)
             df['Term'] = tab_name
 
             all_dataframes.append(df)
+
+        if not all_dataframes:
+            raise ValueError("No data found in any sheet tabs")
 
         master_df = pd.concat(all_dataframes, ignore_index=True)
         master_df = master_df.dropna(how='all')
@@ -51,9 +57,13 @@ def get_grades_data():
         if 'Instructor' in master_df.columns and 'Subject' in master_df.columns:
             master_df = master_df.dropna(subset=['Instructor', 'Subject'])
 
+        # Clean instructor names and remove placeholders ('0', 'NONE', 'STAFF', etc.)
         if 'Instructor' in master_df.columns:
             master_df['Instructor'] = master_df['Instructor'].astype(str).str.strip().str.upper()
-            master_df = master_df[~master_df['Instructor'].isin(['NAN', 'STAFF', 'NONE', ''])]
+            invalid_instructors = {'NAN', 'STAFF', 'NONE', '', '0', '0.0', 'UNKNOWN', 'TBA', 'TBD', ',', 'NULL'}
+            master_df = master_df[~master_df['Instructor'].isin(invalid_instructors)]
+            # Instructor must contain at least one letter
+            master_df = master_df[master_df['Instructor'].str.contains(r'[A-Z]', regex=True, na=False)]
 
         if 'Subject' in master_df.columns:
             master_df['Subject'] = master_df['Subject'].astype(str).str.strip().str.upper()
@@ -61,12 +71,17 @@ def get_grades_data():
         if 'Course Number' in master_df.columns:
             master_df['Course Number'] = master_df['Course Number'].astype(str).str.strip().str.upper()
 
+        # Filter out cancelled sections or zero-enrollment sections
+        if 'Total' in master_df.columns:
+            total_numeric = pd.to_numeric(master_df['Total'], errors='coerce').fillna(0)
+            master_df = master_df[total_numeric > 0]
+
         print(f"Dataset combined and cleaned into {len(master_df)} rows.")
-        
         return master_df
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred while fetching grades data: {e}")
+        raise
 
 if __name__ == "__main__":
     grades_df = get_grades_data()

@@ -135,13 +135,41 @@ export function getGradeData(course: InstructorSummary): GradeRecord[] {
     ];
 }
 
+const GRADE_WEIGHTS: Record<string, number> = {
+    "a+": 4.0, "a": 4.0, "a-": 3.7,
+    "b+": 3.3, "b": 3.0, "b-": 2.7,
+    "c+": 2.3, "c": 2.0, "c-": 1.7,
+    "d+": 1.3, "d": 1.0,
+    "f": 0.0,
+};
+
 export function getCourseStats(course: InstructorSummary) {
     const total = Number(course.Total || 0);
-    const gpa = Number(Number(course["avg gpa"] || 0).toFixed(2));
     const withdrawals = Number(course.w || 0);
+    const finished = Math.max(0, total - withdrawals);
     const withdrawalRate = total ? Number(((withdrawals / total) * 100).toFixed(2)) : 0;
 
-    const passed =
+    // Calculate section GPA accurately from letter grades
+    let graded = 0;
+    let qualityPoints = 0;
+
+    for (const [grade, weight] of Object.entries(GRADE_WEIGHTS)) {
+        const count = Number((course as any)[grade] || 0);
+        graded += count;
+        qualityPoints += count * weight;
+    }
+
+    let gpa = 0;
+    if (graded > 0) {
+        gpa = Number((qualityPoints / graded).toFixed(2));
+    } else {
+        const rawGpa = Number(course["avg gpa"]);
+        if (!Number.isNaN(rawGpa) && rawGpa > 0) {
+            gpa = Number(rawGpa.toFixed(2));
+        }
+    }
+
+    const passedAboveC =
         Number(course["a+"] || 0) +
         Number(course.a || 0) +
         Number(course["a-"] || 0) +
@@ -151,7 +179,8 @@ export function getCourseStats(course: InstructorSummary) {
         Number(course["c+"] || 0) +
         Number(course.c || 0);
         
-    const passingRate = total ? Number(((passed / total) * 100).toFixed(2)) : 0;
+    // Effective passing rate: C or better out of students who finished
+    const passingRate = finished > 0 ? Number(((passedAboveC / finished) * 100).toFixed(2)) : 0;
 
     return { gpa, withdrawalRate, passingRate };
 }
@@ -160,14 +189,40 @@ export function getSummary(data: GroupedInstructorHistory) {
     const allCourses = Object.values(data).flat();
     const subjects = Array.from(new Set(allCourses.map((c) => c.Subject)));
 
+    // Calculate student-weighted GPA so 0-student or cancelled sections have 0 weight
     const getGpa = (courses: InstructorSummary[]) => {
-        const gpas = courses
-            .filter((c) => c["avg gpa"] !== null)
-            .map((c) => Number(c["avg gpa"]))
-            .filter((g) => !Number.isNaN(g));
+        let totalQualityPoints = 0;
+        let totalGradedStudents = 0;
 
-        return gpas.length
-            ? Number((gpas.reduce((a, b) => a + b, 0) / gpas.length).toFixed(2))
+        for (const c of courses) {
+            let sectionGraded = 0;
+            let sectionPoints = 0;
+
+            for (const [grade, weight] of Object.entries(GRADE_WEIGHTS)) {
+                const count = Number((c as any)[grade] || 0);
+                sectionGraded += count;
+                sectionPoints += count * weight;
+            }
+
+            if (sectionGraded > 0) {
+                totalQualityPoints += sectionPoints;
+                totalGradedStudents += sectionGraded;
+            } else {
+                // Fallback for older rows where letter grades might not be broken down
+                const rawGpa = Number(c["avg gpa"]);
+                const total = Number(c.Total || 0);
+                const w = Number(c.w || 0);
+                const finished = Math.max(0, total - w);
+
+                if (!Number.isNaN(rawGpa) && rawGpa > 0 && finished > 0) {
+                    totalQualityPoints += rawGpa * finished;
+                    totalGradedStudents += finished;
+                }
+            }
+        }
+
+        return totalGradedStudents > 0
+            ? Number((totalQualityPoints / totalGradedStudents).toFixed(2))
             : 0;
     };
 
@@ -208,7 +263,7 @@ export function getSummary(data: GroupedInstructorHistory) {
 
 export function getGradeDistribution(data: GroupedInstructorHistory): GradeBucket[] {
     const allCourses = Object.values(data).flat();
-    const totals = { A: 0, B: 0, C: 0, D: 0, F: 0, W: 0, P: 0, INC: 0 };
+    const totals = { A: 0, B: 0, C: 0, D: 0, F: 0, W: 0 };
 
     for (const c of allCourses) {
         totals.A += Number(c["a+"] || 0) + Number(c.a || 0) + Number(c["a-"] || 0);
@@ -217,16 +272,15 @@ export function getGradeDistribution(data: GroupedInstructorHistory): GradeBucke
         totals.D += Number(c["d+"] || 0) + Number(c.d || 0);
         totals.F += Number(c.f || 0);
         totals.W += Number(c.w || 0);
-        totals.P += Number(c.p || 0);
-        totals.INC += Number(c.inc || 0);
     }
     
-    const total = Object.values(totals).reduce((a, b) => a + b, 0) || 1;
+    // Normalize percentage strictly against visible letter grades & withdrawals so they total 100%
+    const totalVisible = Object.values(totals).reduce((a, b) => a + b, 0) || 1;
     const visible = ["A", "B", "C", "D", "F", "W"] as const;
 
     return visible.map((label) => ({
         label,
         value: totals[label],
-        percent: (totals[label] / total) * 100,
+        percent: (totals[label] / totalVisible) * 100,
     }));
 }
