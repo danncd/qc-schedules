@@ -22,10 +22,14 @@ export default function InstructorClient({ instructorData }: Props) {
 		return () => clearTimeout(timer);
 	}, [searchQuery]);
 
-	const filtered = useMemo(() => {
+	const isSearching = /[a-z0-9]{2,}/i.test(debouncedQuery.toLowerCase().trim());
+
+	const displayedInstructors = useMemo(() => {
 		const q = debouncedQuery.toLowerCase().trim();
 
-		if (!/[a-z0-9]{2,}/i.test(q)) return [];
+		if (!isSearching) {
+			return instructorData.slice(0, 30);
+		}
 
 		return instructorData.filter(
 			(i) =>
@@ -33,7 +37,7 @@ export default function InstructorClient({ instructorData }: Props) {
 				i.rawName.toLowerCase().includes(q) ||
 				i.slug.includes(q),
 		);
-	}, [debouncedQuery, instructorData]);
+	}, [debouncedQuery, instructorData, isSearching]);
 
     return (
         <>
@@ -45,11 +49,12 @@ export default function InstructorClient({ instructorData }: Props) {
                 />
             </header>
             <h2 className={`${manrope.className} mt-6 text-xs font-semibold text-neutral-700 dark:text-neutral-300`}>
-				Found {filtered.length} result
-				{(filtered.length > 1 || filtered.length == 0) && "s"}.
+				{!isSearching
+					? `Featured Faculty (${instructorData.length} total available)`
+					: `Found ${displayedInstructors.length} result${displayedInstructors.length === 1 ? "" : "s"}.`}
 			</h2>
             <div className="flex flex-col mt-3 gap-3">
-				{filtered.map((inst) => (
+				{displayedInstructors.map((inst) => (
 					<Link
 						key={inst.slug}
 						href={`/instructor/${inst.slug}`}

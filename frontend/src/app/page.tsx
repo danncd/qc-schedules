@@ -1,9 +1,19 @@
 export const revalidate = 14400;
 
+import type { Metadata } from "next";
 import Link from "next/link";
 import { IconMoodSmileBeam, IconArrowRight } from "@tabler/icons-react";
 import { manrope } from "@/_lib/fonts";
 import Button from "@/_components/ui/Button";
+
+export const metadata: Metadata = {
+	title: "Queens College Course Schedules & Professor Grade Distributions",
+	description:
+		"The fastest course schedule lookup and professor grade distribution tool for Queens College (CUNY) students. Search classes, check instructor GPAs, and plan your semester.",
+	alternates: {
+		canonical: "/",
+	},
+};
 
 
 const BACKGROUND_PATTERN = {

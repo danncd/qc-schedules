@@ -16,16 +16,63 @@ export const viewport: Viewport = {
 	maximumScale: 1,
 };
 
-export const metadata: Metadata = {
-	title: "QC Schedules | Complete Queens College Course Listings",
-	description:
-		"Browse the latest Queens College course offerings, including sections, instructors, and meeting times.",
-	icons: {
+const SITE_URL = "https://qcs.danncd.com";
 
+export const metadata: Metadata = {
+	metadataBase: new URL(SITE_URL),
+	title: {
+		default: "QC Schedules | Queens College Course Schedules & Professor Grades",
+		template: "%s | QC Schedules",
+	},
+	description:
+		"The fastest course schedule search and professor grade distribution tool for Queens College (CUNY) students. Search courses, sections, and check instructor GPAs.",
+	keywords: [
+		"Queens College",
+		"QC Schedules",
+		"Queens College course schedule",
+		"CUNY Queens College",
+		"Queens College professor grades",
+		"QC grade distribution",
+		"Queens College class lookup",
+		"CUNYFirst alternative",
+		"Queens College GPA",
+	],
+	authors: [{ name: "QC Schedules" }],
+	creator: "QC Schedules",
+	publisher: "QC Schedules",
+	alternates: {
+		canonical: "/",
+	},
+	openGraph: {
+		title: "QC Schedules | Queens College Course Schedules & Professor Grades",
+		description:
+			"Search Queens College course offerings, sections, instructors, and real historical grade distributions.",
+		url: SITE_URL,
+		siteName: "QC Schedules",
+		locale: "en_US",
+		type: "website",
+	},
+	twitter: {
+		card: "summary_large_image",
+		title: "QC Schedules | Queens College Course Schedules & Professor Grades",
+		description:
+			"Search Queens College course offerings, sections, instructors, and real historical grade distributions.",
+	},
+	robots: {
+		index: true,
+		follow: true,
+		googleBot: {
+			index: true,
+			follow: true,
+			"max-video-preview": -1,
+			"max-image-preview": "large",
+			"max-snippet": -1,
+		},
+	},
+	icons: {
 		icon: "/favicon.ico",
 		apple: "/apple-touch-icon.png",
 	},
-
 };
 
 export default function RootLayout({
@@ -49,6 +96,22 @@ export default function RootLayout({
 								} catch (e) {}
 							})();
 						`,
+					}}
+				/>
+				<script
+					type="application/ld+json"
+					dangerouslySetInnerHTML={{
+						__html: JSON.stringify({
+							"@context": "https://schema.org",
+							"@type": "WebSite",
+							name: "QC Schedules",
+							url: SITE_URL,
+							potentialAction: {
+								"@type": "SearchAction",
+								target: `${SITE_URL}/schedule?search={search_term_string}`,
+								"query-input": "required name=search_term_string",
+							},
+						}),
 					}}
 				/>
 			</head>

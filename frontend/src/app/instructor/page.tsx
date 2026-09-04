@@ -1,8 +1,24 @@
 export const revalidate = 14400;
 
+import type { Metadata } from "next";
 import { getInstructorNames } from "@/_utils/server";
 import InstructorClient from "./_components/InstructorClient";
 import { manrope } from "@/_lib/fonts";
+
+export const metadata: Metadata = {
+	title: "Queens College Professors & Grade Distributions Directory",
+	description:
+		"Browse Queens College faculty and professors. View historical grade distributions, average GPAs, and passing rates across all departments.",
+	alternates: {
+		canonical: "/instructor",
+	},
+	openGraph: {
+		title: "Queens College Professors & Grade Distributions Directory | QC Schedules",
+		description:
+			"Browse Queens College faculty and professors. View historical grade distributions, average GPAs, and passing rates across all departments.",
+		url: "/instructor",
+	},
+};
 
 export default async function InstructorPage() {
 	const instructorData = await getInstructorNames();
