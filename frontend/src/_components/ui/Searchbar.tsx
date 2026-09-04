@@ -41,7 +41,7 @@ export default function Searchbar({
 				/>
 				<input
 					placeholder={placeholder}
-					className="w-full bg-transparent outline-none text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:placeholder-neutral-400"
+					className="w-full bg-transparent outline-none text-base md:text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:placeholder-neutral-400"
 					value={value}
 					onChange={(e) => onChange(e.target.value)}
 				/>

@@ -278,6 +278,9 @@ export const getInstructorHistory = cache(
 
 			const grouped = fallbackData.reduce((acc, row) => {
 				const term = row.Term ?? "Unknown";
+				if (row.Subject === "CSCI" && row["Course Number"] === "381" && row["Course Name"]) {
+					row["Course Name"] = row["Course Name"].replace(/^VT:\s*/i, "");
+				}
 				if (!acc[term]) {
 					acc[term] = [];
 				}
@@ -295,6 +298,9 @@ export const getInstructorHistory = cache(
 
 		const grouped = data.reduce((acc, row) => {
 			const term = row.Term ?? "Unknown";
+			if (row.Subject === "CSCI" && row["Course Number"] === "381" && row["Course Name"]) {
+				row["Course Name"] = row["Course Name"].replace(/^VT:\s*/i, "");
+			}
 			if (!acc[term]) {
 				acc[term] = [];
 			}

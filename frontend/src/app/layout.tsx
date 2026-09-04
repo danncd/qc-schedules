@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 import Header from "@/_components/layout/Header";
@@ -9,6 +9,12 @@ const roboto = Roboto({
 	subsets: ["latin"],
 	weight: ["100", "300", "400", "500", "700"],
 });
+
+export const viewport: Viewport = {
+	width: "device-width",
+	initialScale: 1,
+	maximumScale: 1,
+};
 
 export const metadata: Metadata = {
 	title: "QC Schedules | Complete Queens College Course Listings",

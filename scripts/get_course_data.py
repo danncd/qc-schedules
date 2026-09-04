@@ -69,6 +69,13 @@ def get_course_data():
                 print(f"Skipping {name} {year}: {e}")
 
         browser.close()
+
+    try:
+        from enrich_csci381 import enrich_all_schedules
+        all_semesters_df = enrich_all_schedules(all_semesters_df)
+    except Exception as e:
+        print(f"Warning: Could not enrich CSCI 381 topics: {e}")
+
     return all_semesters_df
 
 if __name__ == "__main__":

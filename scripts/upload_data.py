@@ -76,7 +76,11 @@ def sync_table_to_supabase(df, table_name, engine, sync_key):
 def sync_schedule(engine):
     print("\n=== Syncing Schedule Data ===")
     from get_course_data import get_course_data
+    from enrich_csci381 import enrich_all_schedules, sync_database_csci381
+
     schedule_dfs = get_course_data()
+    schedule_dfs = enrich_all_schedules(schedule_dfs)
+
     for semester_name, new_df in schedule_dfs.items():
         sync_table_to_supabase(
             df=new_df, 
@@ -85,14 +89,17 @@ def sync_schedule(engine):
             sync_key='Code'
         )
 
+    sync_database_csci381(dry_run=False)
+
 def sync_grades(engine):
     print("\n=== Syncing Instructor Grades & Summaries ===")
     from get_grades_data import get_grades_data
     from get_professor_summary import get_professor_summary
+    from enrich_csci381 import enrich_grades_df, sync_database_csci381
 
     grades_df = get_grades_data()
+    grades_df = enrich_grades_df(grades_df)
     
-    # 1. Sync raw instructor grades table
     sync_table_to_supabase(
         df=grades_df,
         table_name="instructor_grades",
@@ -100,7 +107,6 @@ def sync_grades(engine):
         sync_key=['Term', 'Subject', 'Course Number', 'Section', 'Instructor']
     )
 
-    # 2. Compute and sync instructor course summary table
     summary_df = get_professor_summary(grades_df)
     sync_table_to_supabase(
         df=summary_df, 
@@ -109,16 +115,15 @@ def sync_grades(engine):
         sync_key=['Instructor', 'Subject', 'Course Number']
     )
 
+    sync_database_csci381(dry_run=False)
+
 def main():
     parser = argparse.ArgumentParser(description="Sync QC course schedules and instructor grades to Supabase.")
     parser.add_argument("--schedule", action="store_true", help="Sync only current course schedules")
     parser.add_argument("--grades", action="store_true", help="Sync only instructor grades and course summaries")
     parser.add_argument("--all", action="store_true", help="Sync both schedule and instructor grades")
+    parser.add_argument("--enrich-csci", action="store_true", help="Enrich CSCI 381 special topics in current database tables")
     args = parser.parse_args()
-
-    # Default to syncing all if neither is specified
-    run_schedule = args.schedule or args.all or (not args.schedule and not args.grades)
-    run_grades = args.grades or args.all or (not args.schedule and not args.grades)
 
     load_dotenv()
     db_url = os.getenv("SUPABASE_DB_URL")
@@ -126,6 +131,15 @@ def main():
         raise ValueError("SUPABASE_DB_URL not found in environment variables")
     
     engine = create_engine(db_url)
+
+    if args.enrich_csci:
+        from enrich_csci381 import sync_database_csci381
+        sync_database_csci381(dry_run=False)
+        return
+
+    # Default to syncing all if neither is specified
+    run_schedule = args.schedule or args.all or (not args.schedule and not args.grades)
+    run_grades = args.grades or args.all or (not args.schedule and not args.grades)
 
     if run_schedule:
         sync_schedule(engine)
