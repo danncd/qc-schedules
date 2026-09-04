@@ -117,7 +117,7 @@ export default function ScheduleCourseCard({
 						<Description
 							tag="Instructor"
 							value={courseInstructor}
-							classes="font-bold text-[13px] text-neutral-900 dark:text-neutral-100"
+							classes="font-black! text-[13px] text-neutral-900 dark:text-neutral-100"
 							font
 						/>
 						{hasInstructor && instructorSummary && (
