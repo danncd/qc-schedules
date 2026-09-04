@@ -20,22 +20,22 @@ const getColor = (label: string) => {
 
 export default function GradeDistributionBar({ distribution }: Props) {
     return (
-        <div className="mt-3 space-y-1">
-            <div className="flex w-full h-6 rounded overflow-hidden bg-gray-300 dark:bg-gray-700">
+        <div className="mt-2 space-y-2">
+            <div className="flex w-full h-5 rounded-full overflow-hidden bg-neutral-200/80 dark:bg-neutral-800">
                 {distribution.map((g) => {
                     if (g.percent <= 0) return null;
                     return (
                         <div
                             key={g.label}
-                            className={`relative ${getColor(g.label)} h-full flex items-center justify-center transition-all duration-300`}
+                            className={`relative ${getColor(g.label)} h-full flex items-center justify-center`}
                             style={{ width: `${g.percent}%` }}
                             title={`${g.label}: ${g.percent.toFixed(1)}%, Count: ${g.value}`}
                         >
-                            {g.percent >= 7 && (
+                            {g.percent >= 8 && (
                                 <div
-                                    className={`hidden lg:block pointer-events-none bg-white/50 ${manrope.className} text-[11px] font-extrabold text-black drop-shadow-sm rounded-md whitespace-nowrap px-1`}
+                                    className={`hidden lg:block pointer-events-none bg-black/20 dark:bg-black/30 backdrop-blur-xs ${manrope.className} text-[10px] font-semibold text-white rounded-full whitespace-nowrap px-1.5`}
                                 >
-                                    {g.label} - <span className="font-bold">{g.percent.toFixed(1)}%</span>
+                                    {g.label} · <span>{g.percent.toFixed(1)}%</span>
                                 </div>
                             )}
                         </div>
@@ -43,11 +43,12 @@ export default function GradeDistributionBar({ distribution }: Props) {
                 })}
             </div>
             
-            <div className={`${manrope.className} lg:hidden flex flex-warp gap-x-5 text-[12px] mt-2 flex-wrap`}>
+            <div className={`${manrope.className} flex flex-wrap gap-x-4 gap-y-1 text-xs pt-1`}>
                 {distribution.map((g) => (
-                    <span key={g.label} className="font-bold flex items-center gap-1">
-                        <span className={`w-2 h-2 rounded ${getColor(g.label)}`} />
-                        {g.label} - {g.percent.toFixed(1)}%
+                    <span key={g.label} className="inline-flex items-center gap-1.5 font-semibold text-neutral-800 dark:text-neutral-200 text-[11px]">
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${getColor(g.label)}`} />
+                        <span>{g.label}</span>
+                        <span className="text-neutral-600 dark:text-neutral-400 font-normal">{g.percent.toFixed(1)}%</span>
                     </span>
                 ))}
             </div>

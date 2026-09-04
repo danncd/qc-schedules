@@ -27,34 +27,29 @@ export default function Header() {
 	}, [darkMode]);
     
     return (
-        <header className="h-16 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-                <Link href="/">
-                    <span className={`${manrope.className} font-extrabold text-[24px]`}>QC Schedules</span>
+        <header className="h-16 top-0 z-40 flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+                <Link href="/" className="hover:opacity-85">
+                    <span className={`${manrope.className} font-extrabold text-[22px] tracking-tight text-neutral-900 dark:text-neutral-100`}>QC Schedules</span>
                 </Link>
-                <span className="text-gray-500 dark:text-gray-300 text-sm pt-1 hidden md:block">
-                    <span className="underline underline-offset-3">Unofficial</span>
-                    {" "}
+                <span className="text-neutral-700 dark:text-neutral-400 text-[13px] hidden md:flex items-center gap-1.5 border-l border-neutral-200 dark:border-neutral-800 pl-3">
+                    <span className="underline">Unofficial</span>
                     <span>Course Listings & Professor Data</span>
                 </span>
             </div>
-            <div className="flex flex-row items-center gap-1">
+            <div className="flex flex-row items-center gap-2">
                 <nav
-					className="flex flex-row gap-2"
+					className="flex flex-row gap-1"
 					aria-label="Main navigation"
 				>
 					<Link href="/">
-						<Button variant="Ghost" className="font-medium">Home</Button>
+						<Button variant="Ghost" className={`font-extrabold text-[14px] tracking-wide ${manrope.className}`}>Home</Button>
 					</Link>
 				</nav>
-                <div
-					className="h-5 w-0.5 bg-gray-400 mx-2"
-					aria-hidden="true"
-				/>
-                <Button
+                <button
+					type="button"
 					onClick={() => setDarkMode(!darkMode)}
-					className="p-1.5!"
-					variant="Ghost"
+					className="w-8.5 h-8.5 flex items-center justify-center rounded-full border border-neutral-200/80 dark:border-neutral-700/80 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 shadow-xs text-neutral-800 dark:text-neutral-200 active:scale-95 cursor-pointer"
 					aria-label={
 						darkMode
 							? "Switch to light mode"
@@ -62,11 +57,11 @@ export default function Header() {
 					}
 				>
 					{darkMode ? (
-						<IconMoonFilled size={24} />
+						<IconMoonFilled size={17} className="text-neutral-200" />
 					) : (
-						<IconSunHighFilled size={24} />
+						<IconSunHighFilled size={17} className="text-neutral-800" />
 					)}
-				</Button>
+				</button>
             </div>
         </header>
     );

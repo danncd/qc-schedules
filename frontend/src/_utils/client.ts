@@ -32,40 +32,40 @@ type GPAStyle = {
 export function colorGPA(gpa: number): GPAStyle {
 	if (gpa >= 3.7) {
 		return {
-			text: "text-green-600",
-			border: "border-green-600/50",
-			bg: "bg-green-600",
+			text: "text-green-600 dark:text-green-400",
+			border: "border-green-600/50 dark:border-green-400/50",
+			bg: "bg-green-600 dark:bg-green-500",
 		};
 	}
 
 	if (gpa >= 3.0) {
 		return {
-			text: "text-lime-600",
-			border: "border-lime-600/50",
-			bg: "bg-lime-600",
+			text: "text-lime-600 dark:text-lime-400",
+			border: "border-lime-600/50 dark:border-lime-400/50",
+			bg: "bg-lime-600 dark:bg-lime-500",
 		};
 	}
 
 	if (gpa >= 2.0) {
 		return {
-			text: "text-yellow-600",
-			border: "border-yellow-600/50",
-			bg: "bg-yellow-600",
+			text: "text-yellow-600 dark:text-yellow-400",
+			border: "border-yellow-600/50 dark:border-yellow-400/50",
+			bg: "bg-yellow-600 dark:bg-yellow-500",
 		};
 	}
 
 	if (gpa >= 1.0) {
 		return {
-			text: "text-orange-600",
-			border: "border-orange-600/50",
-			bg: "bg-orange-600",
+			text: "text-orange-600 dark:text-orange-400",
+			border: "border-orange-600/50 dark:border-orange-400/50",
+			bg: "bg-orange-600 dark:bg-orange-500",
 		};
 	}
 
 	return {
-		text: "text-red-600",
-		border: "border-red-600/50",
-		bg: "bg-red-600",
+		text: "text-red-600 dark:text-red-400",
+		border: "border-red-600/50 dark:border-red-400/50",
+		bg: "bg-red-600 dark:bg-red-500",
 	};
 }
 
@@ -85,18 +85,18 @@ export function letterGradeFromGPA(gpa: number): string {
 }
 
 export function colorPassingRate(num: number): string {
-	if (num >= 90) return "text-green-600";
-	if (num >= 75) return "text-lime-600";
-	if (num >= 60) return "text-yellow-600";
-	if (num >= 40) return "text-orange-600";
-	return "text-red-600";
+	if (num >= 90) return "text-green-600 dark:text-green-400";
+	if (num >= 75) return "text-lime-600 dark:text-lime-400";
+	if (num >= 60) return "text-yellow-600 dark:text-yellow-400";
+	if (num >= 40) return "text-orange-600 dark:text-orange-400";
+	return "text-red-600 dark:text-red-400";
 }
 
 export function colorWithdrawalRate(num: number): string {
-	if (num > 50) return "text-red-600";
-	if (num > 30) return "text-orange-600";
-	if (num > 15) return "text-yellow-600";
-	return "text-green-600";
+	if (num > 50) return "text-red-600 dark:text-red-400";
+	if (num > 30) return "text-orange-600 dark:text-orange-400";
+	if (num > 15) return "text-yellow-600 dark:text-yellow-400";
+	return "text-green-600 dark:text-green-400";
 }
 
 import { GroupedInstructorHistory, InstructorSummary } from "@/_lib/types";

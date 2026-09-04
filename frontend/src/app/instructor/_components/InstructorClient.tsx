@@ -2,21 +2,16 @@
 
 import Searchbar from "@/_components/ui/Searchbar";
 import { manrope } from "@/_lib/fonts";
+import { InstructorListing } from "@/_lib/types";
 import { IconExternalLink } from "@tabler/icons-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-type Instructor = {
-	instructor: string;
-	subjects: string[];
+type Props = {
+    instructorData: InstructorListing[];
 };
 
-type Props = {
-    instructorData: Instructor[],
-}
-
 export default function InstructorClient({ instructorData }: Props) {
-
     const [searchQuery, setSearchQuery] = useState("");
 	const [debouncedQuery, setDebouncedQuery] = useState("");
 
@@ -32,8 +27,11 @@ export default function InstructorClient({ instructorData }: Props) {
 
 		if (!/[a-z0-9]{2,}/i.test(q)) return [];
 
-		return instructorData.filter((i) =>
-			i.instructor.toLowerCase().includes(q),
+		return instructorData.filter(
+			(i) =>
+				i.instructor.toLowerCase().includes(q) ||
+				i.rawName.toLowerCase().includes(q) ||
+				i.slug.includes(q),
 		);
 	}, [debouncedQuery, instructorData]);
 
@@ -46,35 +44,42 @@ export default function InstructorClient({ instructorData }: Props) {
                     onChange={(val) => setSearchQuery(val)}
                 />
             </header>
-            <h2 className={`${manrope.className} mt-6 text-lg font-bold`}>
+            <h2 className={`${manrope.className} mt-6 text-xs font-semibold text-neutral-700 dark:text-neutral-300`}>
 				Found {filtered.length} result
 				{(filtered.length > 1 || filtered.length == 0) && "s"}.
 			</h2>
-            <div className="flex flex-col mt-4 gap-4">
+            <div className="flex flex-col mt-3 gap-3">
 				{filtered.map((inst) => (
 					<Link
-						key={inst.instructor}
-						href={`/instructor/${encodeURIComponent(inst.instructor)}`}
+						key={inst.slug}
+						href={`/instructor/${inst.slug}`}
 					>
 						<div
-							className={`${manrope.className} cursor-pointer border border-gray-400 dark:bg-[#212121] p-3 rounded-lg shadow-md hover:scale-101 transition-scale duration-200`}
+							className={`${manrope.className} group cursor-pointer rounded-2xl border border-neutral-200/80 dark:border-neutral-800 bg-white/80 dark:bg-[#181818]/80 hover:bg-neutral-50/80 dark:hover:bg-neutral-800/50 backdrop-blur-xs p-4 shadow-2xs hover:border-neutral-300 dark:hover:border-neutral-700`}
 						>
 							<div className="flex flex-row items-center gap-3 justify-between">
-								<span className="text-sm font-bold">
+								<span className="text-sm font-bold text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 dark:group-hover:text-blue-400">
 									{inst.instructor}
 								</span>
-								<div className="text-gray-900 dark:text-gray-100 flex flex-row gap-2 items-center cursor-pointer w-fit text-sm hover:underline">
-									<IconExternalLink size={18} />
-									<span>Visit Instructor&apos;s Page</span>
+								<div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-neutral-800 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/60 group-hover:border-neutral-300 dark:group-hover:border-neutral-600 group-hover:bg-neutral-200/70 dark:group-hover:bg-neutral-700 dark:group-hover:text-white shrink-0">
+									<IconExternalLink size={14} />
+									<span>Visit Page</span>
 								</div>
 							</div>
-							<span className="text-xs text-gray-500 dark:text-gray-300 font-extrabold">
-								{inst.subjects.join(", ")}
-							</span>
+							<div className="flex flex-wrap gap-1.5 mt-2.5">
+								{inst.subjects.map((sub) => (
+									<span
+										key={sub}
+										className="px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[11px] font-medium text-neutral-700 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700/60"
+									>
+										{sub}
+									</span>
+								))}
+							</div>
 						</div>
 					</Link>
 				))}
 			</div>
         </>
-    )
+    );
 }

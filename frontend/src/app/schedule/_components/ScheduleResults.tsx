@@ -23,7 +23,7 @@ export default function ScheduleResults({ scheduleResults, instructorCourseSumma
     }, [instructorCourseSummary]);
 
     return (
-        <div className="grid md:grid-cols-2 gap-4 transition-opacity duration-200">
+        <div className="grid md:grid-cols-2 gap-4">
             {scheduleResults.map((course, index) => {
                 const parts = course["Course (hr, crd)"].split(" ");
                 const subject = parts[0];

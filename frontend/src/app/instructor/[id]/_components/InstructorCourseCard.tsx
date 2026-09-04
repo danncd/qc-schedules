@@ -17,9 +17,9 @@ type DescriptionProps = {
 
 function Description({ description, value, color }: DescriptionProps) {
     return (
-        <div className="text-sm">
-            <span>{description}</span> :{" "}
-            <span className={`${manrope.className} font-extrabold ${color || ""}`}>
+        <div className="text-xs leading-relaxed">
+            <span className="text-neutral-700 dark:text-neutral-300 font-medium">{description}:</span>{" "}
+            <span className={`${manrope.className} font-bold ${color || "text-neutral-800 dark:text-neutral-200"}`}>
                 {value}
             </span>
         </div>
@@ -33,7 +33,7 @@ export const GradeDistributionChart = memo(({ gradeData }: { gradeData: GradeRec
     );
 
     return (
-        <div className="mt-8 flex items-end justify-between gap-2 h-50 group/chart w-full cursor-pointer">
+        <div className="mt-6 flex items-end justify-between gap-2.5 h-44 group/chart w-full">
             {gradeData.map((grade) => {
                 const barHeight = (grade.count / maxCount) * 100;
 
@@ -42,18 +42,18 @@ export const GradeDistributionChart = memo(({ gradeData }: { gradeData: GradeRec
                         key={grade.label}
                         className="flex-1 flex flex-col items-center h-full justify-end gap-2"
                     >
-                        <div className="flex-1 w-full flex items-end justify-center min-h-0 pt-5">
+                        <div className="flex-1 w-full flex items-end justify-center min-h-0 pt-6">
                             <div
-                                className={`relative w-full flex justify-center ${grade.color} opacity-90 rounded-t-sm transition-[height,opacity] duration-700 ease-out min-h-1 hover:opacity-100 shadow-sm`}
+                                className={`relative w-full flex justify-center ${grade.color} opacity-85 hover:opacity-100 rounded-t-md min-h-1.5 shadow-2xs`}
                                 style={{ height: `${barHeight}%` }}
                             >
-                                <span className="absolute -top-5 text-[12px] font-medium text-gray-600 dark:text-gray-300 transition-opacity duration-300">
+                                <span className="absolute -top-5 text-[11px] font-semibold text-neutral-700 dark:text-neutral-300">
                                     {grade.count}
                                 </span>
                             </div>
                         </div>
 
-                        <span className="text-[13px] font-medium text-gray-700 dark:text-gray-200 uppercase tracking-tighter">
+                        <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 uppercase tracking-tight">
                             {grade.label}
                         </span>
                     </div>
@@ -70,24 +70,24 @@ export const InstructorCourseCard = memo(function CourseCard({ course }: Props) 
     const { gpa, withdrawalRate, passingRate } = useMemo(() => getCourseStats(course), [course]);
 
     return (
-        <div className="rounded-lg border border-gray-300 shadow-md dark:shadow-none p-4 flex flex-col gap-4">
+        <div className="rounded-2xl border border-neutral-200/80 dark:border-neutral-800 bg-white/80 dark:bg-[#181818]/80 backdrop-blur-xs p-5 shadow-2xs hover:border-neutral-300 dark:hover:border-neutral-700 flex flex-col gap-4">
             <div>
-                <div className="flex flex-row gap-2 items-end">
-                    <h3 className={`${manrope.className} font-extrabold text-md`}>
+                <div className="flex flex-wrap items-center gap-2">
+                    <h3 className={`${manrope.className} font-bold text-base tracking-tight text-neutral-900 dark:text-neutral-100`}>
                         {course.Subject} {course["Course Number"]}
                     </h3>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200/60 dark:border-neutral-700/60">
                         Section {course.Section}
                     </span>
                 </div>
-                <h4 className="font-medium text-sm">{course["Course Name"]}</h4>
+                <h4 className="font-medium text-xs text-neutral-700 dark:text-neutral-300 mt-1">{course["Course Name"]}</h4>
             </div>
             
             <div>
                 <GradeDistributionChart gradeData={gradeData} />
             </div>
             
-            <div className="p-4 bg-gray-200/60 dark:bg-[#212121] rounded-lg">
+            <div className="p-3.5 bg-neutral-50/90 dark:bg-neutral-900/90 border border-neutral-200/70 dark:border-neutral-800 rounded-xl space-y-1">
                 <Description description="Total Students" value={course.Total} />
                 <Description description="Average GPA" value={gpa} color={colorGPA(gpa).text} />
                 <Description 

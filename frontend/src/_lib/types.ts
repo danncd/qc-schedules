@@ -66,3 +66,10 @@ export type InstructorSummary = {
 export interface GroupedInstructorHistory {
     [term: string]: InstructorSummary[];
 }
+
+export type InstructorListing = {
+    instructor: string;
+    rawName: string;
+    slug: string;
+    subjects: string[];
+};

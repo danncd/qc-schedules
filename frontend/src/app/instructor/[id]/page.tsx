@@ -11,15 +11,14 @@ type Props = {
 export default async function InstructorIDPage({ params }: Props) {
 	const { id } = await params;
 
-	const instructorName = decodeURIComponent(id);
-	const instructorData = await getInstructorHistory(instructorName);
+	const { instructorData, displayName } = await getInstructorHistory(id);
 
 	if (!instructorData || Object.keys(instructorData).length === 0) notFound();
 
 	return (
 		<main>
             <InstructorIDClient
-                instructorName={instructorName}
+                instructorName={displayName}
                 instructorData={instructorData}
             />
         </main>

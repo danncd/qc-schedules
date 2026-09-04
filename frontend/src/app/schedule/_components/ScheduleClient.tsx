@@ -95,7 +95,7 @@ export default function ScheduleClient({ semesterData, semesterNames, instructor
 
             <section className="my-6">
 
-                <h2 className={`${manrope.className} font-bold text-lg mb-3`}>
+                <h2 className={`${manrope.className} font-semibold text-xs text-neutral-700 dark:text-neutral-300 mb-3`}>
                     Found {filteredCourses.length} result
                     {(filteredCourses.length > 1 || filteredCourses.length == 0) && "s"}.
                 </h2>
@@ -106,27 +106,33 @@ export default function ScheduleClient({ semesterData, semesterNames, instructor
                 />
 
                 {totalPages > 1 && (
-                    <nav className="flex items-center justify-center gap-4 my-6" aria-label="Pagination">
-                        <Button
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            disabled={currentPage === 1}
-                            className="disabled:opacity-30 p-1.5!"
-                        >
-                            <IconChevronLeft size={18} />
-                        </Button>
+                    <div className="flex justify-center my-8">
+                        <nav className="inline-flex items-center gap-3 px-3 py-1.5 rounded-full bg-white/80 dark:bg-[#181818]/80 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs backdrop-blur-xs" aria-label="Pagination">
+                            <Button
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                                variant="Ghost"
+                                className="w-7! h-7! p-0! rounded-full flex items-center justify-center disabled:opacity-30 text-neutral-700 dark:text-neutral-300"
+                                aria-label="Previous page"
+                            >
+                                <IconChevronLeft size={16} />
+                            </Button>
 
-                        <span className="text-sm font-medium">
-                            Page {currentPage} of {totalPages}
-                        </span>
+                            <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200 select-none">
+                                Page {currentPage} of {totalPages}
+                            </span>
 
-                        <Button
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                            disabled={currentPage === totalPages}
-                            className="disabled:opacity-30 p-1.5!"
-                        >
-                            <IconChevronRight size={18} />
-                        </Button>
-                    </nav>
+                            <Button
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                                variant="Ghost"
+                                className="w-7! h-7! p-0! rounded-full flex items-center justify-center disabled:opacity-30 text-neutral-700 dark:text-neutral-300"
+                                aria-label="Next page"
+                            >
+                                <IconChevronRight size={16} />
+                            </Button>
+                        </nav>
+                    </div>
                 )}
             </section>
         </>
