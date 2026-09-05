@@ -89,7 +89,7 @@ def sync_schedule(engine):
             sync_key='Code'
         )
 
-    sync_database_csci381(dry_run=False)
+    sync_database_csci381(dry_run=False, engine=engine)
 
 def sync_grades(engine):
     print("\n=== Syncing Instructor Grades & Summaries ===")
@@ -115,7 +115,7 @@ def sync_grades(engine):
         sync_key=['Instructor', 'Subject', 'Course Number']
     )
 
-    sync_database_csci381(dry_run=False)
+    sync_database_csci381(dry_run=False, engine=engine)
 
 def main():
     parser = argparse.ArgumentParser(description="Sync QC course schedules and instructor grades to Supabase.")

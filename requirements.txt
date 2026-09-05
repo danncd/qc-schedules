@@ -1,0 +1,11 @@
+pandas
+numpy
+sqlalchemy
+psycopg2-binary
+requests
+python-dotenv
+openpyxl
+lxml
+beautifulsoup4
+pypdf
+playwright

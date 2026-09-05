@@ -281,7 +281,11 @@ def enrich_schedule_df(df: pd.DataFrame, season: str, code_map: Dict[str, str], 
 
 def enrich_all_schedules(all_semesters_df: Dict[str, pd.DataFrame]) -> Dict[str, pd.DataFrame]:
     print("[*] Fetching CS department schedule PDFs for special topics enrichment...")
-    pdf_urls = discover_schedule_pdfs()
+    try:
+        pdf_urls = discover_schedule_pdfs()
+    except Exception as e:
+        print(f"    Warning: Could not discover CS schedule PDFs ({e}).")
+        pdf_urls = {}
 
     pdf_maps: Dict[str, Tuple[Dict[str, str], Dict[str, Dict[str, str]]]] = {}
     for season, url in pdf_urls.items():
@@ -384,26 +388,34 @@ def enrich_grades_df(
     return df
 
 
-def sync_database_csci381(dry_run: bool = True):
-    load_dotenv()
-    db_url = os.getenv("SUPABASE_DB_URL")
-    if not db_url:
-        print("Error: SUPABASE_DB_URL not found in environment.", file=sys.stderr)
-        sys.exit(1)
+def sync_database_csci381(dry_run: bool = True, engine: Optional[Any] = None):
+    if engine is None:
+        load_dotenv()
+        db_url = os.getenv("SUPABASE_DB_URL")
+        if not db_url:
+            print("Error: SUPABASE_DB_URL not found in environment.", file=sys.stderr)
+            sys.exit(1)
+        engine = create_engine(db_url)
 
-    engine = create_engine(db_url)
-    pdf_urls = discover_schedule_pdfs()
-    print(f"[*] Discovered {len(pdf_urls)} CS schedule PDFs: {list(pdf_urls.keys())}")
+    try:
+        pdf_urls = discover_schedule_pdfs()
+        print(f"[*] Discovered {len(pdf_urls)} CS schedule PDFs: {list(pdf_urls.keys())}")
+    except Exception as e:
+        print(f"[!] Warning: Could not discover CS schedule PDFs: {e}")
+        pdf_urls = {}
 
     pdf_maps = {}
     pdf_years = {}
     for season, url in pdf_urls.items():
-        print(f"[*] Extracting CSCI 381/780 topics from {season} PDF: {url}")
-        code_map, sec_map = get_csci_topic_maps(url)
-        pdf_maps[season] = (code_map, sec_map)
-        m = re.search(r"(\d{2})\.pdf", url)
-        pdf_years[season] = "20" + m.group(1) if m else str(pd.Timestamp.now().year)
-        print(f"    Found {len(code_map)} special topics sections.")
+        try:
+            print(f"[*] Extracting CSCI 381/780 topics from {season} PDF: {url}")
+            code_map, sec_map = get_csci_topic_maps(url)
+            pdf_maps[season] = (code_map, sec_map)
+            m = re.search(r"(\d{2})\.pdf", url)
+            pdf_years[season] = "20" + m.group(1) if m else str(pd.Timestamp.now().year)
+            print(f"    Found {len(code_map)} special topics sections.")
+        except Exception as e:
+            print(f"    Warning: Could not parse {season} PDF: {e}")
 
     total_updated = 0
 
