@@ -22,33 +22,40 @@ def fetch_schedules(year: int | None = None) -> dict[str, pd.DataFrame]:
         browser = playwright.chromium.launch(headless=True)
         try:
             page = browser.new_page()
-            page.goto(COURSE_SEARCH_URL)
+            page.goto(COURSE_SEARCH_URL, wait_until="domcontentloaded")
             page.get_by_text("Schedule").first.click()
 
             year_select = page.locator(f"{SCHEDULE_FORM}ddlTermYear")
             if year is not None:
                 year_select.select_option(str(year))
-                page.wait_for_load_state("networkidle")
             selected_year = year_select.input_value()
 
             for value, semester in SEMESTERS.items():
                 semester_key = f"{semester}_{selected_year}"
                 print(f"Fetching {semester_key}...")
                 page.select_option(f"{SCHEDULE_FORM}ddlSemester", value)
-                page.wait_for_load_state("networkidle")
-
-                with page.expect_response(
-                    lambda response: "courses" in response.url.lower(),
-                    timeout=30000,
-                ):
-                    page.locator(f"{SCHEDULE_FORM}btnBringSchedule").click()
-
-                page.wait_for_load_state("networkidle")
                 try:
-                    page.wait_for_selector("#gvCourseSchd", timeout=20000)
+                    # The dropdowns are local form values. Only Display Results
+                    # submits a new document; unrelated traffic need not be idle.
+                    with page.expect_response(
+                        lambda response: (
+                            response.request.is_navigation_request()
+                            and response.frame == page.main_frame
+                            and response.request.method == "POST"
+                        ),
+                        timeout=30000,
+                    ) as submitted:
+                        page.locator(f"{SCHEDULE_FORM}btnBringSchedule").click()
+                    response = submitted.value
+                    if not response.ok:
+                        raise ValueError(
+                            f"Schedule request returned HTTP {response.status}."
+                        )
+                    # Parse this submission, never a previous term's table.
                     tables = pd.read_html(
-                        io.StringIO(page.content()),
+                        io.StringIO(response.text()),
                         attrs={"id": "gvCourseSchd"},
+                        flavor="lxml",
                     )
                 except (PlaywrightTimeoutError, ValueError) as error:
                     raise RuntimeError(
