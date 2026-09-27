@@ -1,9 +1,17 @@
+import Link from "next/link";
 export default function NotFound() {
-	return (
-        <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
-            <span className="text-md">
-                This page does not exist yet.
-            </span>
-        </div>
+    return (
+        <section className="empty-state">
+            <h1 className="page-title">Page not found</h1>
+            <p className="muted mb-4">
+                This address could not be matched to a page.
+            </p>
+            <Link
+                className="button"
+                href="/schedule"
+            >
+                Browse courses
+            </Link>
+        </section>
     );
 }

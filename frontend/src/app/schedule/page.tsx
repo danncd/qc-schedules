@@ -1,42 +1,45 @@
-export const revalidate = 14400;
-
-import type { Metadata } from "next";
+import DataRefresh from "@/components/layout/DataRefresh";
 import { Suspense } from "react";
-import { manrope } from "@/_lib/fonts";
-import { getInstructorCourseSummaries, getScheduleData } from "@/_utils/server";
-import ScheduleClient from "./_components/ScheduleClient";
-
+import type { Metadata } from "next";
+import {
+    getTerms,
+    getScheduleSnapshot,
+} from "@/features/schedule/data/queries";
+import { defaultTerm } from "@/lib/terms";
+import ScheduleView from "@/features/schedule/components/ScheduleView";
 export const metadata: Metadata = {
-	title: "Queens College Course Schedules & Class Lookup",
-	description:
-		"Search and browse current and upcoming Queens College (CUNY) course schedules across all departments, sections, meeting times, and instructors.",
-	alternates: {
-		canonical: "/schedule",
-	},
-	openGraph: {
-		title: "Queens College Course Schedules & Class Lookup | QC Schedules",
-		description:
-			"Search and browse current and upcoming Queens College (CUNY) course schedules across all departments, sections, meeting times, and instructors.",
-		url: "/schedule",
-	},
+    title: "Course Schedule Lookup",
+    alternates: { canonical: "/schedule" },
 };
-
-export default async function SchedulePage() {
-	const { semesterData, semesterNames } = await getScheduleData();
-	const instructorCourseSummary = await getInstructorCourseSummaries();
-
-	return (
-		<main>
-			<h1 className={`${manrope.className} font-bold text-xl`}>
-				Course Schedule Lookup
-			</h1>
-			<Suspense fallback={null}>
-				<ScheduleClient
-					semesterData={semesterData}
-					semesterNames={semesterNames}
-					instructorCourseSummary={instructorCourseSummary}
-				/>
-			</Suspense>
-		</main>
-	);
+export default async function Schedule({
+    searchParams,
+}: {
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+    const [terms, params] = await Promise.all([getTerms(), searchParams]);
+    const requested = typeof params.sem === "string" ? params.sem : "";
+    const term =
+        terms.find((term) => term.id === requested || term.label === requested)
+            ?.id || defaultTerm(terms);
+    const snapshot = term ? await getScheduleSnapshot(term) : null;
+    return (
+        <>
+            <DataRefresh />
+            <h1 className="page-title">Course Schedule Lookup</h1>
+            {!term ? (
+                <p className="empty-state">
+                    No published semesters are available.
+                </p>
+            ) : (
+                <Suspense fallback={<p>Loading courses…</p>}>
+                    <ScheduleView
+                        courses={snapshot!.courses}
+                        terms={terms}
+                        term={term}
+                        now={snapshot!.now}
+                    />
+                </Suspense>
+            )}
+        </>
+    );
 }

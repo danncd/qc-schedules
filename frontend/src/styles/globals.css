@@ -1,0 +1,11 @@
+@import "tailwindcss";
+@import "./theme.css";
+@import "./base.css";
+@import "./layout.css";
+@import "./controls.css";
+@import "./grades.css";
+@import "./courses.css";
+
+@theme {
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}

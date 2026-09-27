@@ -1,0 +1,91 @@
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    align-items: start;
+}
+.card {
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    corner-shape: squircle;
+    background: var(--paper);
+    box-shadow: 0 1px 2px #00000003;
+    min-width: 0;
+}
+.card:hover {
+    border-color: color-mix(in srgb, var(--ink) 25%, var(--line));
+}
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 14px;
+}
+.course-id {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+.course-id h2,
+.course-id h3 {
+    font-size: 16px;
+    font-weight: 650;
+    letter-spacing: -0.3px;
+}
+.badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    background: var(--soft);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    white-space: nowrap;
+}
+.meeting-times {
+    text-align: right;
+    font-size: 11px;
+    line-height: 1.6;
+}
+.meeting-times > div + div {
+    margin-top: 6px;
+}
+.course-title {
+    font-size: 14px;
+    margin-top: 7px;
+    font-weight: 500;
+}
+.facts {
+    margin-top: 10px;
+    border-left: 3px solid var(--line);
+    padding-left: 10px;
+    font-size: 12px;
+    line-height: 1.65;
+}
+.instructor-block {
+    margin-top: 10px;
+    border-left: 3px solid #aaa;
+    padding-left: 10px;
+}
+.full {
+    color: var(--danger);
+}
+.instructor-card {
+    display: block;
+}
+@media (max-width: 700px) {
+    .card-grid {
+        grid-template-columns: 1fr;
+    }
+    .card {
+        padding: 15px;
+    }
+    .meeting-times {
+        max-width: 48%;
+    }
+}
+
+.instructor-block[class] {
+    border-left-color: var(--statistic-color, #aaa);
+    color: var(--ink);
+}

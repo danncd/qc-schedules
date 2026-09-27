@@ -1,0 +1,18 @@
+:root {
+    color-scheme: light;
+    --paper: #fff;
+    --ink: #262626;
+    --muted: #737373;
+    --line: #e6e6e6;
+    --soft: #f7f7f7;
+    --danger: #b34d53;
+}
+.dark {
+    color-scheme: dark;
+    --paper: #191919;
+    --ink: #ededed;
+    --muted: #aaa;
+    --line: #363636;
+    --soft: #242424;
+    --danger: #f59a9f;
+}

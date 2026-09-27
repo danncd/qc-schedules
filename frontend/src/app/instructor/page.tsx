@@ -1,34 +1,23 @@
-export const revalidate = 14400;
-
+import DataRefresh from "@/components/layout/DataRefresh";
+import { Suspense } from "react";
+import { connection } from "next/server";
 import type { Metadata } from "next";
-import { getInstructorNames } from "@/_utils/server";
-import InstructorClient from "./_components/InstructorClient";
-import { manrope } from "@/_lib/fonts";
-
+import { getInstructors } from "@/features/instructors/data/queries";
+import InstructorDirectory from "@/features/instructors/components/InstructorDirectory";
 export const metadata: Metadata = {
-	title: "Queens College Professors & Grade Distributions Directory",
-	description:
-		"Browse Queens College faculty and professors. View historical grade distributions, average GPAs, and passing rates across all departments.",
-	alternates: {
-		canonical: "/instructor",
-	},
-	openGraph: {
-		title: "Queens College Professors & Grade Distributions Directory | QC Schedules",
-		description:
-			"Browse Queens College faculty and professors. View historical grade distributions, average GPAs, and passing rates across all departments.",
-		url: "/instructor",
-	},
+    title: "Instructor Lookup",
+    alternates: { canonical: "/instructor" },
 };
-
-export default async function InstructorPage() {
-	const instructorData = await getInstructorNames();
-
-	return (
-		<main className="min-h-[calc(100vh-4rem)]">
-			<h1 className={`${manrope.className} font-bold text-xl`}>
-				Instructor Lookup
-			</h1>
-			<InstructorClient instructorData={instructorData} />
-		</main>
-	);
+export default async function Instructors() {
+    await connection();
+    const instructors = await getInstructors();
+    return (
+        <>
+            <DataRefresh />
+            <h1 className="page-title">Instructor Lookup</h1>
+            <Suspense fallback={<p>Loading instructors…</p>}>
+                <InstructorDirectory instructors={instructors} />
+            </Suspense>
+        </>
+    );
 }

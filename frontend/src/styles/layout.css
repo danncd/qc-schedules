@@ -1,0 +1,150 @@
+.shell {
+    width: min(1040px, calc(100% - 48px));
+    margin-inline: auto;
+}
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--paper);
+}
+.header-inner {
+    height: 72px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.brand {
+    font-size: 18px;
+    font-weight: 650;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+}
+.brand span {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--muted);
+}
+.main-nav {
+    margin-left: auto;
+    display: flex;
+    gap: 6px;
+}
+.main-nav a {
+    padding: 7px 10px;
+    color: var(--muted);
+    position: relative;
+}
+.main-nav a::after {
+    content: "";
+    position: absolute;
+    bottom: 2px;
+    left: 10px;
+    right: 10px;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--ink);
+    transform: scaleX(0);
+    transition: transform 0.15s;
+}
+.main-nav a:hover::after,
+.main-nav a[aria-current="page"]::after {
+    transform: scaleX(1);
+}
+.main-nav a[aria-current="page"] {
+    color: var(--ink);
+}
+.theme-toggle {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+.sun,
+.dark .moon {
+    display: none;
+}
+.dark .sun {
+    display: block;
+}
+.main-content {
+    min-height: calc(100svh - 72px);
+    padding-top: 14px;
+    padding-bottom: 24px;
+}
+.page-title {
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: -0.45px;
+    margin-bottom: 14px;
+}
+.site-footer {
+    padding-block: 24px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 12px;
+}
+.home-intro {
+    min-height: calc(100svh - 150px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    text-align: center;
+}
+.home-intro h1 {
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: -1px;
+}
+.home-intro p {
+    max-width: 450px;
+    color: var(--muted);
+    font-size: 16px;
+}
+.back-link {
+    display: inline-block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+}
+@media (max-width: 700px) {
+    .shell {
+        width: calc(100% - 32px);
+    }
+    .header-inner {
+        gap: 4px;
+    }
+    .brand {
+        font-size: 14px;
+        gap: 4px;
+        flex-wrap: wrap;
+        line-height: 1.2;
+        max-width: 140px;
+    }
+    .brand span {
+        font-size: 10px;
+    }
+    .main-nav {
+        gap: 0;
+    }
+    .main-nav a {
+        font-size: 12px;
+        padding: 7px;
+    }
+    .theme-toggle {
+        width: 30px;
+    }
+    .home-intro h1 {
+        font-size: 28px;
+    }
+    .page-title {
+        font-size: 20px;
+    }
+}
