@@ -1,13 +1,13 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { DATA_REFRESH_SECONDS } from "@/lib/data-refresh";
+import { PAGE_CACHE_SECONDS } from "@/lib/cache";
 
 export default function DataRefresh() {
     const router = useRouter();
     useEffect(() => {
         let refreshed = Date.now();
-        const interval = DATA_REFRESH_SECONDS * 1000;
+        const interval = PAGE_CACHE_SECONDS * 1000;
         function refresh() {
             if (
                 document.visibilityState !== "visible" ||

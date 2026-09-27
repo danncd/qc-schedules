@@ -74,7 +74,7 @@
 }
 .main-content {
     min-height: calc(100svh - 72px);
-    padding-top: 14px;
+    padding-top: 4px;
     padding-bottom: 24px;
 }
 .page-title {
@@ -88,25 +88,6 @@
     border-top: 1px solid var(--line);
     color: var(--muted);
     font-size: 12px;
-}
-.home-intro {
-    min-height: calc(100svh - 150px);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 24px;
-    text-align: center;
-}
-.home-intro h1 {
-    font-size: 36px;
-    font-weight: 600;
-    letter-spacing: -1px;
-}
-.home-intro p {
-    max-width: 450px;
-    color: var(--muted);
-    font-size: 16px;
 }
 .back-link {
     display: inline-block;
@@ -140,9 +121,6 @@
     }
     .theme-toggle {
         width: 30px;
-    }
-    .home-intro h1 {
-        font-size: 28px;
     }
     .page-title {
         font-size: 20px;

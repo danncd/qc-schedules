@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
-import { DATA_REFRESH_SECONDS } from "@/lib/data-refresh";
+import { DATA_REVALIDATE_SECONDS } from "@/lib/cache";
 
 export type DatabaseRow = Record<string, unknown>;
 
@@ -17,7 +17,7 @@ export function database() {
             fetch: (input, init) =>
                 fetch(input, {
                     ...init,
-                    next: { revalidate: DATA_REFRESH_SECONDS },
+                    next: { revalidate: DATA_REVALIDATE_SECONDS },
                     signal: init?.signal
                         ? AbortSignal.any([
                               init.signal,

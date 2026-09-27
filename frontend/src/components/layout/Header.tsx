@@ -8,7 +8,8 @@ export default function Header() {
         <header className="site-header">
             <div className="shell header-inner">
                 <Link
-                    href="/"
+                    href="/schedule"
+                    prefetch={true}
                     className="brand"
                 >
                     QC Schedules <span>Unofficial Listings</span>
@@ -19,6 +20,7 @@ export default function Header() {
                 >
                     <Link
                         href="/schedule"
+                        prefetch={true}
                         aria-current={
                             path.startsWith("/schedule") ? "page" : undefined
                         }
@@ -27,6 +29,7 @@ export default function Header() {
                     </Link>
                     <Link
                         href="/instructor"
+                        prefetch={true}
                         aria-current={
                             path.startsWith("/instructor") ? "page" : undefined
                         }

@@ -1,1 +1,0 @@
-export const DATA_REFRESH_SECONDS = 300;
