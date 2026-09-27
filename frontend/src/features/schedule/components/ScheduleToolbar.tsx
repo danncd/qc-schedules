@@ -10,7 +10,6 @@ export default function ScheduleToolbar({
     onTerm,
     onlyNew,
     onNew,
-    pending,
 }: {
     query: string;
     onQuery: (q: string) => void;
@@ -19,7 +18,6 @@ export default function ScheduleToolbar({
     onTerm: (term: string) => void;
     onlyNew: boolean;
     onNew: () => void;
-    pending: boolean;
 }) {
     return (
         <div className="toolbar">
@@ -36,7 +34,6 @@ export default function ScheduleToolbar({
                     label: term.label,
                 }))}
                 onChange={onTerm}
-                disabled={pending}
             />
             <Button
                 className="new-filter"

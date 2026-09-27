@@ -24,6 +24,15 @@ export const getTerms = cache(async () => {
     return tables.flat().sort((a, b) => b.year - a.year || b.order - a.order);
 });
 
+const getSubjectSummaries = cache((subject: string) =>
+    readRows(
+        "instructor_course_summary",
+        "*",
+        ["Instructor", "Course Number"],
+        ["Subject", subject],
+    ),
+);
+
 export const getSections = cache(async (term: string) => {
     if (!termFromTable(term)) throw new Error("Invalid semester.");
     const [rows, directory] = await Promise.all([
@@ -33,20 +42,17 @@ export const getSections = cache(async (term: string) => {
     const sections = groupSections(rows.map(mapSection));
     const subjects = [...new Set(sections.map((section) => section.subject))];
     const summaries = (
-        await Promise.all(
-            subjects.map((subject) =>
-                readRows(
-                    "instructor_course_summary",
-                    "*",
-                    ["Instructor", "Course Number"],
-                    ["Subject", subject],
-                ),
-            ),
-        )
+        await Promise.all(subjects.map(getSubjectSummaries))
     ).flat();
     return attachStatistics(sections, summaries, directory);
 });
 
-export async function getScheduleSnapshot(term: string) {
-    return { courses: await getSections(term), now: Date.now() };
+export async function getScheduleSnapshot() {
+    const terms = await getTerms();
+    const entries = await Promise.all(
+        terms.map(
+            async (term) => [term.id, await getSections(term.id)] as const,
+        ),
+    );
+    return { terms, schedules: Object.fromEntries(entries) };
 }

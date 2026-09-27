@@ -8,6 +8,12 @@ import {
 import { resolveInstructor } from "@/features/instructors/lib/identity";
 import InstructorOverview from "@/features/instructors/components/InstructorOverview";
 import InstructorHistory from "@/features/instructors/components/InstructorHistory";
+export const revalidate = 14400;
+
+export function generateStaticParams() {
+    return [];
+}
+
 type Props = { params: Promise<{ id: string }> };
 export async function generateMetadata({ params }: Props) {
     const { id } = await params;
