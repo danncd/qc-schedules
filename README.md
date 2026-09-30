@@ -45,6 +45,8 @@ python -m scripts.sync_schedule
 python -m scripts.sync_grades
 ```
 
+Schedule imports read the default year and every newer year offered by QC’s year selector. Terms explicitly reported as unpublished are skipped, preserving any existing database data. Use `--year 2027` to import just one year.
+
 To save changes, copy the root `.env.example` to `.env`, set `SUPABASE_DB_URL`, and add `--commit` to either command.
 
 GitHub Actions schedules course imports every four hours and grade imports weekly. These workflows use the `SUPABASE_DB_URL` repository secret.

@@ -14,6 +14,10 @@ class ScheduleSourceTests(unittest.TestCase):
         self.page.wait_for_load_state.side_effect = schedules.PlaywrightTimeoutError(
             "Background requests keep the page from becoming idle."
         )
+        self.page.locator.return_value.locator.return_value.evaluate_all.return_value = [
+            "2026", "2025"
+        ]
+        self.empty_term = None
         self.bad_term = None
         self.status = 200
         self.candidate_responses = []
@@ -39,6 +43,8 @@ class ScheduleSourceTests(unittest.TestCase):
         )
         if semester == self.bad_term:
             html = "<p>No schedule available.</p>"
+        if semester == self.empty_term:
+            html = "<p>No schedule has been found. Please try different search condition.</p>"
         responses = [
             self.response("asset", navigation=False, method="GET"),
             self.response("iframe", frame=object()),
@@ -74,6 +80,28 @@ class ScheduleSourceTests(unittest.TestCase):
         rows = self.fetch(year=2027)
         self.assertEqual(set(rows), {f"{s}_2027" for s in schedules.SEMESTERS.values()})
         self.page.locator.return_value.select_option.assert_called_once_with("2027")
+
+    def test_default_includes_upcoming_years_but_not_historical_years(self):
+        self.page.locator.return_value.locator.return_value.evaluate_all.return_value = [
+            "2027", "2026", "2025", ""
+        ]
+        rows = self.fetch()
+        self.assertEqual(set(rows), {
+            f"{season}_{year}"
+            for year in (2026, 2027) for season in schedules.SEMESTERS.values()
+        })
+        self.assertEqual(
+            [call.args[0] for call in self.page.locator.return_value.select_option.call_args_list],
+            ["2026", "2027"],
+        )
+
+    def test_unpublished_terms_are_omitted_without_reusing_previous_rows(self):
+        self.empty_term = "06N"
+        rows = self.fetch(year=2027)
+        self.assertNotIn("summer_1_2027", rows)
+        self.assertEqual(len(rows), 4)
+        self.assertIn("winter_2027", rows)
+        self.browser.close.assert_called_once()
 
     def test_missing_table_fails_instead_of_reusing_previous_term(self):
         self.bad_term = "02Y"
