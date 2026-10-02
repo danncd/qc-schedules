@@ -231,3 +231,66 @@ test("a historical full name is not replaced by someone sharing the same initial
     ];
     assert.equal(attachStatistics(courses, summaries, people)[0].stats, null);
 });
+
+test("time summary combines overlapping weekdays while preserving room records", async () => {
+    const { meetingTimes } =
+        await import("../../src/features/schedule/lib/meeting-times");
+    const meetings = [
+        {
+            days: "F",
+            time: "10:00 AM - 12:50 PM",
+            room: "SB C201",
+            instructor: "Waxman, Jerry",
+        },
+        {
+            days: "M",
+            time: "10:00 AM - 12:50 PM",
+            room: "SB C201",
+            instructor: "Waxman, Jerry",
+        },
+        {
+            days: "M, T, W, TH, F",
+            time: "10:00 AM - 12:50 PM",
+            room: "OL 01",
+            instructor: "Waxman, Jerry",
+        },
+        {
+            days: "TH",
+            time: "2:00 PM - 3:00 PM",
+            room: "SB C201",
+            instructor: "Waxman, Jerry",
+        },
+    ];
+    assert.deepEqual(meetingTimes(meetings), [
+        { days: "M, T, W, TH, F", time: "10:00 AM - 12:50 PM" },
+        { days: "TH", time: "2:00 PM - 3:00 PM" },
+    ]);
+    assert.equal(meetings.length, 4);
+    assert.equal(meetings[0].room, "SB C201");
+});
+
+test("room details combine weekdays without losing room or instructor distinctions", async () => {
+    const { meetingDetails } =
+        await import("../../src/features/schedule/lib/meeting-times");
+    const meeting = {
+        days: "F",
+        time: "10",
+        room: "SB C201",
+        instructor: "Waxman, Jerry",
+    };
+    const rows = [
+        meeting,
+        { ...meeting, days: "M" },
+        { ...meeting, days: "M, T, W, TH, F", room: "OL 01" },
+        { ...meeting, instructor: "Other instructor" },
+        { ...meeting, time: "11" },
+    ];
+    const details = meetingDetails(rows);
+    assert.equal(details.length, 4);
+    assert.equal(details[0].days, "M, F");
+    assert.equal(details[1].room, "OL 01");
+    assert.equal(details[1].days, "M, T, W, TH, F");
+    assert.equal(details[2].instructor, "Other instructor");
+    assert.equal(details[3].time, "11");
+    assert.equal(rows[0].days, "F");
+});

@@ -14,6 +14,7 @@ export default function InstructorCourseCard({
                     {record.subject} {record.number}
                 </h3>
                 <span className="badge">Section {record.section}</span>
+                <span className="badge">Students {record.total ?? "—"}</span>
             </div>
             <p className="course-title">{record.title}</p>
             <GradeDistribution records={[record]} />

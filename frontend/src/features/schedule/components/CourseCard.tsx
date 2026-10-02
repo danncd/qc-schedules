@@ -1,6 +1,8 @@
 import type { CourseSection } from "../types";
+import { meetingDetails, meetingTimes } from "../lib/meeting-times";
 import CourseInstructorStats from "./CourseInstructorStats";
 export default function CourseCard({ course }: { course: CourseSection }) {
+    const details = meetingDetails(course.meetings);
     const full =
         course.limit !== null &&
         course.enrolled !== null &&
@@ -17,7 +19,7 @@ export default function CourseCard({ course }: { course: CourseSection }) {
                     </span>
                 </div>
                 <div className="meeting-times">
-                    {course.meetings.map((meeting, index) => (
+                    {meetingTimes(course.meetings).map((meeting, index) => (
                         <div key={index}>
                             {meeting.days || "-"}
                             <br />
@@ -33,11 +35,11 @@ export default function CourseCard({ course }: { course: CourseSection }) {
                 {course.mode || "Format unavailable"}
             </p>
             <div className="facts">
-                {course.meetings.map((meeting, index) => (
+                {details.map((meeting, index) => (
                     <div key={index}>
                         <span className="muted">Room: </span>
                         {meeting.room || "TBA"}
-                        {course.meetings.length > 1 && (
+                        {details.length > 1 && (
                             <span className="muted">
                                 {" "}
                                 · {meeting.days} {meeting.time}

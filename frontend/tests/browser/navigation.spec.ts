@@ -65,6 +65,12 @@ test("stats disclose accessibly and link to a real instructor history", async ({
     await expect(
         page.getByRole("heading", { name: "Course history", exact: true }),
     ).toBeVisible();
+    await expect(
+        page
+            .locator(".semester-section .card")
+            .first()
+            .getByText(/^Students (\d+|—)$/),
+    ).toBeVisible();
     await page
         .getByRole("button", { name: "Collapse All", exact: true })
         .click();
@@ -147,4 +153,28 @@ test("background refresh preserves filters and expanded statistics", async ({
     await expect(page.getByRole("searchbox")).toHaveValue("PSYCH");
     await expect(stats).toHaveAttribute("aria-expanded", "true");
     await expect(page.locator(".course-card").first()).toBeVisible();
+});
+
+test("overlapping schedule times are consolidated while rooms remain visible", async ({
+    page,
+}) => {
+    await page.goto("/schedule?sem=winter_2027&q=20717");
+    const card = page.locator(".course-card").first();
+    await expect(card).toContainText("CSCI 381");
+    await expect(card.locator(".meeting-times > div")).toHaveCount(1);
+    await expect(card.locator(".meeting-times")).toHaveText(
+        "M, T, W, TH, F10:00 AM - 12:50 PM",
+    );
+    const rooms = card.locator(".facts > div").filter({ hasText: "Room:" });
+    await expect(rooms).toHaveCount(2);
+    await expect(rooms.filter({ hasText: "SB C201" })).toContainText("M, F");
+    await expect(rooms.filter({ hasText: "OL 01" })).toContainText(
+        "M, T, W, TH, F",
+    );
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(
+        await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+    ).toBe(true);
 });
