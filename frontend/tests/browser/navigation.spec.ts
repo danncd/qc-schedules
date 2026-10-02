@@ -69,8 +69,12 @@ test("stats disclose accessibly and link to a real instructor history", async ({
         page
             .locator(".semester-section .card")
             .first()
-            .getByText(/^Students (\d+|—)$/),
-    ).toBeVisible();
+            .locator(".stats-surface .grade-statistics > div")
+            .first(),
+    ).toContainText(/^Students\d+|Students—$/);
+    await expect(
+        page.locator(".semester-section .card").first().locator(".course-id"),
+    ).not.toContainText("Students");
     await page
         .getByRole("button", { name: "Collapse All", exact: true })
         .click();

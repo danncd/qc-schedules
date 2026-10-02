@@ -14,12 +14,14 @@ export default function InstructorCourseCard({
                     {record.subject} {record.number}
                 </h3>
                 <span className="badge">Section {record.section}</span>
-                <span className="badge">Students {record.total ?? "—"}</span>
             </div>
             <p className="course-title">{record.title}</p>
             <GradeDistribution records={[record]} />
             <div className="stats-surface">
-                <GradeStatistics stats={statistics([record])} />
+                <GradeStatistics
+                    stats={statistics([record])}
+                    showStudents
+                />
             </div>
         </article>
     );

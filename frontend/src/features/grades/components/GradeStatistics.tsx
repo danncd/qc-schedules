@@ -1,9 +1,21 @@
 import type { Statistics } from "../types";
 import { statisticTone } from "../lib/colors";
 import { metric } from "../lib/formatting";
-export default function GradeStatistics({ stats }: { stats: Statistics }) {
+export default function GradeStatistics({
+    stats,
+    showStudents = false,
+}: {
+    stats: Statistics;
+    showStudents?: boolean;
+}) {
     return (
         <dl className="grade-statistics">
+            {showStudents && (
+                <div>
+                    <dt>Students</dt>
+                    <dd>{stats.students ?? "—"}</dd>
+                </div>
+            )}
             <div>
                 <dt>Average GPA</dt>
                 <dd className={statisticTone("gpa", stats.gpa)}>
