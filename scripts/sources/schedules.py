@@ -5,7 +5,8 @@ from bs4 import BeautifulSoup
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
-COURSE_SEARCH_URL = "https://apps.qc.cuny.edu/courses/"
+# The directory index is now a migration notice; use the working form directly.
+COURSE_SEARCH_URL = "https://apps.qc.cuny.edu/courses/Default.aspx"
 SCHEDULE_FORM = "#MainContent_tcMainSearch_tbCourseSchd_"
 SEMESTERS = {
     "02N": "spring",
