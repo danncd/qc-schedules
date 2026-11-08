@@ -19,6 +19,13 @@
     color: var(--muted);
     flex-shrink: 0;
 }
+.search-field {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+    overflow: hidden;
+}
 .search input {
     background: transparent;
     border: 0;
@@ -189,5 +196,20 @@
 @media (prefers-reduced-motion: reduce) {
     .disclosure-chevron {
         transition: none;
+    }
+}
+
+@media (any-pointer: coarse) {
+    /* Keep Safari's focus font at 16px while displaying the original 13px.
+       Compensate both dimensions so the visible input fills its 36px slot. */
+    .search input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        font-size: 16px;
+        width: calc(100% * 16 / 13);
+        height: calc(36px * 16 / 13);
+        transform: scale(0.8125);
+        transform-origin: top left;
     }
 }

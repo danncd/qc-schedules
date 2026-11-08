@@ -15,13 +15,15 @@ export default function SearchInput({
                 stroke={1.6}
                 aria-hidden="true"
             />
-            <input
-                type="search"
-                aria-label={placeholder}
-                placeholder={placeholder}
-                value={value}
-                onChange={(event) => onChange(event.target.value)}
-            />
+            <span className="search-field">
+                <input
+                    type="search"
+                    aria-label={placeholder}
+                    placeholder={placeholder}
+                    value={value}
+                    onChange={(event) => onChange(event.target.value)}
+                />
+            </span>
         </label>
     );
 }
