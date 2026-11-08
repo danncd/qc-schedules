@@ -1,4 +1,4 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL;
 
@@ -7,6 +7,14 @@ export default defineConfig({
     timeout: 120000,
     expect: { timeout: 20000 },
     workers: 1,
+    projects: [
+        { name: "chromium", use: { browserName: "chromium" } },
+        {
+            name: "iphone-safari",
+            testMatch: "semester.spec.ts",
+            use: { ...devices["iPhone 13"], browserName: "webkit" },
+        },
+    ],
     use: {
         baseURL: baseURL || "http://localhost:3005",
         viewport: { width: 1440, height: 1000 },

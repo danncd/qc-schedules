@@ -102,6 +102,10 @@ export default function Select({
                     />
                     <div
                         className="select-menu"
+                        // Safari blurs the focused option before dispatching a
+                        // click on another button. Keep focus inside the menu
+                        // until onClick selects it; touch scrolling stays native.
+                        onMouseDown={(event) => event.preventDefault()}
                         id={id}
                         role="listbox"
                         aria-label={label}
