@@ -115,6 +115,7 @@ export default function Select({
                                 role="option"
                                 aria-selected={option.value === value}
                                 key={option.value}
+                                onMouseDown={(event) => event.preventDefault()}
                                 onClick={() => {
                                     onChange(option.value);
                                     setOpen(false);
