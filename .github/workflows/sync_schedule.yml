@@ -20,7 +20,17 @@ jobs:
                   cache: pip
             - run: pip install -r requirements.txt
             - run: python -B -m unittest discover -s scripts/tests -q
-            - run: python -m playwright install --with-deps chromium
+            - name: Install Chromium
+              # Runner network hiccups (apt DNS failures) are transient; retry.
+              run: |
+                  for attempt in 1 2 3; do
+                      sudo apt-get update -qq || true
+                      python -m playwright install --with-deps chromium && exit 0
+                      echo "Browser install failed (attempt $attempt/3); retrying..."
+                      sleep $((attempt * 20))
+                  done
+                  exit 1
+              timeout-minutes: 15
             - run: python -u -m scripts.sync_schedule --commit
               env:
                   SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
