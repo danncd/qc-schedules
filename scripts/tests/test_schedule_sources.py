@@ -7,6 +7,9 @@ from scripts.sources import schedules
 
 class ScheduleSourceTests(unittest.TestCase):
     def setUp(self):
+        sleep = patch.object(schedules.time, "sleep")
+        sleep.start()
+        self.addCleanup(sleep.stop)
         self.playwright = MagicMock()
         self.browser = self.playwright.chromium.launch.return_value
         self.page = self.browser.new_page.return_value
@@ -20,20 +23,28 @@ class ScheduleSourceTests(unittest.TestCase):
         self.empty_term = None
         self.bad_term = None
         self.status = 200
+        self.failures = 0
         self.candidate_responses = []
         self.page.expect_response.side_effect = self.submit
 
-    def response(self, html, *, navigation=True, method="POST", frame=None):
+    def response(self, html, *, navigation=True, method="POST", frame=None, status=None):
         response = MagicMock()
         response.url = schedules.COURSE_SEARCH_URL
         response.request.is_navigation_request.return_value = navigation
         response.request.method = method
         response.frame = self.page.main_frame if frame is None else frame
-        response.ok = self.status == 200
-        response.status = self.status
+        status = status or self.status
+        response.ok = status == 200
+        response.status = status
         response.text.return_value = html
         self.candidate_responses.append(response)
         return response
+
+    def next_status(self):
+        if self.failures:
+            self.failures -= 1
+            return 400
+        return None
 
     def submit(self, predicate, **kwargs):
         semester = self.page.select_option.call_args.args[1]
@@ -48,7 +59,7 @@ class ScheduleSourceTests(unittest.TestCase):
         responses = [
             self.response("asset", navigation=False, method="GET"),
             self.response("iframe", frame=object()),
-            self.response(html),
+            self.response(html, status=self.next_status()),
         ]
         submitted = MagicMock()
         submitted.__enter__.return_value = SimpleNamespace(
@@ -118,7 +129,17 @@ class ScheduleSourceTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "spring_2026") as error:
             self.fetch()
         self.assertIn("HTTP 503", str(error.exception.__cause__))
+        self.assertEqual(
+            self.page.locator.return_value.click.call_count, schedules.REQUEST_ATTEMPTS
+        )
         self.browser.close.assert_called_once()
+
+    def test_transient_http_failure_is_retried_after_reloading_the_form(self):
+        self.failures = 2
+        rows = self.fetch(year=2027)
+        self.assertEqual(set(rows), {f"{s}_2027" for s in schedules.SEMESTERS.values()})
+        # Initial load plus one reload per failed attempt.
+        self.assertEqual(self.page.goto.call_count, 3)
 
     def test_response_timeout_identifies_the_term_and_closes_browser(self):
         self.page.expect_response.side_effect = schedules.PlaywrightTimeoutError(

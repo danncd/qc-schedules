@@ -1,4 +1,5 @@
 import io
+import time
 
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -15,6 +16,38 @@ SEMESTERS = {
     "09N": "fall",
     "02Y": "winter",
 }
+# QC occasionally answers a valid request with a transient error (e.g. HTTP 400).
+REQUEST_ATTEMPTS = 3
+RETRY_DELAY_SECONDS = 5
+
+
+class ScheduleRequestError(Exception):
+    pass
+
+
+def open_schedule_form(page) -> None:
+    page.goto(COURSE_SEARCH_URL, wait_until="domcontentloaded")
+    page.get_by_text("Schedule").first.click()
+
+
+def submit_term(page, value: str) -> str:
+    page.select_option(f"{SCHEDULE_FORM}ddlSemester", value)
+    # The dropdowns are local form values. Only Display Results
+    # submits a new document; unrelated traffic need not be idle.
+    with page.expect_response(
+        lambda response: (
+            response.request.is_navigation_request()
+            and response.frame == page.main_frame
+            and response.request.method == "POST"
+        ),
+        timeout=30000,
+    ) as submitted:
+        page.locator(f"{SCHEDULE_FORM}btnBringSchedule").click()
+    response = submitted.value
+    if not response.ok:
+        raise ScheduleRequestError(f"Schedule request returned HTTP {response.status}.")
+    # Parse this submission, never a previous term's table.
+    return response.text()
 
 
 def fetch_schedules(year: int | None = None) -> dict[str, pd.DataFrame]:
@@ -24,8 +57,7 @@ def fetch_schedules(year: int | None = None) -> dict[str, pd.DataFrame]:
         browser = playwright.chromium.launch(headless=True)
         try:
             page = browser.new_page()
-            page.goto(COURSE_SEARCH_URL, wait_until="domcontentloaded")
-            page.get_by_text("Schedule").first.click()
+            open_schedule_form(page)
 
             year_select = page.locator(f"{SCHEDULE_FORM}ddlTermYear")
             selected_year = int(year_select.input_value())
@@ -51,26 +83,22 @@ def fetch_schedules(year: int | None = None) -> dict[str, pd.DataFrame]:
                 for value, semester in SEMESTERS.items():
                     semester_key = f"{semester}_{selected_year}"
                     print(f"Fetching {semester_key}...")
-                    page.select_option(f"{SCHEDULE_FORM}ddlSemester", value)
                     try:
-                        # The dropdowns are local form values. Only Display Results
-                        # submits a new document; unrelated traffic need not be idle.
-                        with page.expect_response(
-                            lambda response: (
-                                response.request.is_navigation_request()
-                                and response.frame == page.main_frame
-                                and response.request.method == "POST"
-                            ),
-                            timeout=30000,
-                        ) as submitted:
-                            page.locator(f"{SCHEDULE_FORM}btnBringSchedule").click()
-                        response = submitted.value
-                        if not response.ok:
-                            raise ValueError(
-                                f"Schedule request returned HTTP {response.status}."
-                            )
-                        # Parse this submission, never a previous term's table.
-                        html = response.text()
+                        for attempt in range(1, REQUEST_ATTEMPTS + 1):
+                            try:
+                                html = submit_term(page, value)
+                                break
+                            except (PlaywrightTimeoutError, ScheduleRequestError) as error:
+                                if attempt == REQUEST_ATTEMPTS:
+                                    raise
+                                print(
+                                    f"Retrying {semester_key} "
+                                    f"({attempt}/{REQUEST_ATTEMPTS}): {error}"
+                                )
+                                time.sleep(RETRY_DELAY_SECONDS)
+                                # A failed response may leave the form unusable.
+                                open_schedule_form(page)
+                                year_select.select_option(str(selected_year))
                         soup = BeautifulSoup(html, "html.parser")
                         if soup.find("table", id="gvCourseSchd") is None and (
                             "No schedule has been found. Please try different search condition."
@@ -83,7 +111,7 @@ def fetch_schedules(year: int | None = None) -> dict[str, pd.DataFrame]:
                             attrs={"id": "gvCourseSchd"},
                             flavor="lxml",
                         )
-                    except (PlaywrightTimeoutError, ValueError) as error:
+                    except (PlaywrightTimeoutError, ScheduleRequestError, ValueError) as error:
                         raise RuntimeError(
                             f"Could not read the schedule for {semester_key}."
                         ) from error
